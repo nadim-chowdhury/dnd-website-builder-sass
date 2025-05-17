@@ -7,7 +7,7 @@ import {
   PublishSettings,
 } from "../../types/project";
 import { componentValidator } from "./component-validator";
-import { styleValidator } from "./style-validator";
+import styleValidator from "./style-validator";
 
 // Define valid project types
 const VALID_PROJECT_TYPES: ProjectType[] = [

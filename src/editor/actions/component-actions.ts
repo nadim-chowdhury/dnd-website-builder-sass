@@ -2,10 +2,12 @@ import { createAction } from "@reduxjs/toolkit";
 import {
   ComponentType,
   Component,
-  ComponentId,
   ComponentProps,
 } from "../../types/components";
 import { historyManager } from "../history/history-manager";
+
+// Define ComponentId as string to match the Component interface
+type ComponentId = string;
 
 // Action Types
 export const ADD_COMPONENT = "editor/component/add";
@@ -149,9 +151,13 @@ export const createEmptyComponent = (
   const newId =
     id || `component-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
+  // Generate a default name based on the component type
+  const componentName = `${type.charAt(0).toUpperCase() + type.slice(1)}-${newId.split("-").pop()}`;
+
   return {
     id: newId,
     type,
+    name: componentName,
     props: {
       ...getDefaultPropsForType(type),
       ...props,
@@ -165,24 +171,24 @@ const getDefaultPropsForType = (
   type: ComponentType
 ): Partial<ComponentProps> => {
   switch (type) {
-    case "heading":
-      return { text: "New Heading", level: "h1" };
-    case "text":
-      return { content: "New Text Component" };
-    case "button":
+    case ComponentType.HEADING:
+      return { content: "New Heading", level: 1 };
+    case ComponentType.TEXT:
+      return { content: "New Text Component", htmlElement: "p" };
+    case ComponentType.BUTTON:
       return { label: "Button", variant: "primary" };
-    case "image":
+    case ComponentType.IMAGE:
       return { src: "/placeholder.jpg", alt: "Image description" };
-    case "container":
-      return { direction: "column" };
-    case "section":
+    case ComponentType.CONTAINER:
+      return { maxWidth: "100%", fluid: true };
+    case ComponentType.SECTION:
       return { background: "transparent" };
-    case "grid":
+    case ComponentType.GRID:
       return { columns: 3, gap: 16 };
-    case "form":
-      return { action: "", method: "post" };
-    case "input":
-      return { type: "text", placeholder: "Enter text..." };
+    case ComponentType.FORM:
+      return { action: "", method: "POST" };
+    case ComponentType.INPUT:
+      return { name: "input", type: "text", placeholder: "Enter text..." };
     default:
       return {};
   }

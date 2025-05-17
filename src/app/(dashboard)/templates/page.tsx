@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTemplates } from "@/services/templates";
+import { useTemplates } from "@/hooks/use-template";
 
 interface Template {
   id: string;
@@ -30,7 +30,7 @@ interface Template {
 export default function TemplatesPage() {
   const router = useRouter();
   const { getTemplates } = useTemplates();
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templates, setTemplates] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
@@ -52,14 +52,14 @@ export default function TemplatesPage() {
 
   const categories = [
     "all",
-    ...Array.from(new Set(templates.map((template) => template.category))),
+    ...Array.from(new Set(templates.map((template:any) => template.category))),
   ];
 
-  const filteredTemplates = templates.filter((template) => {
+  const filteredTemplates = templates.filter((template: any) => {
     const matchesSearch =
       template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.tags.some((tag) =>
+      template.tags.some((tag: any) =>
         tag.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
@@ -88,7 +88,7 @@ export default function TemplatesPage() {
         className="mb-8"
       >
         <TabsList className="mb-6">
-          {categories.map((category) => (
+          {categories.map((category: any) => (
             <TabsTrigger key={category} value={category} className="capitalize">
               {category}
             </TabsTrigger>
@@ -114,7 +114,7 @@ export default function TemplatesPage() {
         </div>
       ) : filteredTemplates.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTemplates.map((template) => (
+          {filteredTemplates.map((template: any) => (
             <Card
               key={template.id}
               className="overflow-hidden hover:shadow-lg transition-shadow"
@@ -131,7 +131,7 @@ export default function TemplatesPage() {
               </CardHeader>
               <CardContent className="p-4">
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {template.tags.slice(0, 3).map((tag) => (
+                  {template.tags.slice(0, 3).map((tag: any) => (
                     <Badge key={tag} variant="outline" className="capitalize">
                       {tag}
                     </Badge>

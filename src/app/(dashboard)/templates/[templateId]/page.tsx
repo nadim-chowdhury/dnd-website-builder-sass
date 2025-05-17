@@ -14,9 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTemplates } from "@/services/templates";
-import { useProjects } from "@/services/projects";
-
+import { useTemplates } from "@/hooks/use-template";
+import { useProjects } from "@/hooks/use-project";
 interface Template {
   id: string;
   name: string;
@@ -38,7 +37,7 @@ export default function TemplateDetailPage() {
   const { templateId } = useParams();
   const { getTemplateById } = useTemplates();
   const { createProject } = useProjects();
-  const [template, setTemplate] = useState<Template | null>(null);
+  const [template, setTemplate] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
 
@@ -106,7 +105,8 @@ export default function TemplateDetailPage() {
       <div className="container mx-auto py-8 text-center">
         <h1 className="text-2xl font-bold mb-4">Template not found</h1>
         <p className="mb-6">
-          The template you're looking for doesn't exist or has been removed.
+          The template you&apos;re looking for doesn&apos;t exist or has been
+          removed.
         </p>
         <Button onClick={() => router.push("/templates")}>
           Back to Templates
@@ -131,7 +131,7 @@ export default function TemplateDetailPage() {
           <p className="text-gray-500 mb-6">{template.description}</p>
 
           <div className="flex flex-wrap gap-2 mb-6">
-            {template.tags.map((tag) => (
+            {template.tags.map((tag: any) => (
               <Badge key={tag} variant="outline" className="capitalize">
                 {tag}
               </Badge>
@@ -168,7 +168,7 @@ export default function TemplateDetailPage() {
                     <div className="grid grid-cols-3 gap-4">
                       {template.previewImages
                         .slice(1, 4)
-                        .map((image, index) => (
+                        .map((image: any, index: any) => (
                           <div
                             key={index}
                             className="relative h-32 overflow-hidden rounded-lg border"
@@ -194,7 +194,7 @@ export default function TemplateDetailPage() {
                   </h3>
                   <ul className="space-y-2">
                     {template.features ? (
-                      template.features.map((feature, index) => (
+                      template.features.map((feature: any, index: any) => (
                         <li key={index} className="flex items-start">
                           <span className="mr-2">✓</span>
                           <span>{feature}</span>

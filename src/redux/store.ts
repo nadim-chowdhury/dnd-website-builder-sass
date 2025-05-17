@@ -33,4 +33,11 @@ export const store = configureStore({
     }).concat(...customMiddleware),
 });
 
+// Define types for RootState and AppDispatch from the store
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+// Export AppState as an alias of RootState for consistency with existing code
+export type AppState = RootState;
+
 export default store;

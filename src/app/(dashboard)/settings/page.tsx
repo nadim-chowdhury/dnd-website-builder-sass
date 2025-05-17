@@ -27,6 +27,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ArrowUpCircle, LogOut, User } from "lucide-react";
+import Image from "next/image";
 
 export default function SettingsPage() {
   const [user, setUser] = useState({
@@ -138,9 +139,11 @@ export default function SettingsPage() {
                     <Label>Profile Picture</Label>
                     <div className="flex flex-col items-center space-y-4">
                       <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-100 border">
-                        <img
+                        <Image
                           src={user.avatar}
                           alt="Profile picture"
+                          width={1280}
+                          height={720}
                           className="w-full h-full object-cover"
                         />
                       </div>

@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+// import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -78,7 +78,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 
 export default function AccountSettingsPage() {
-  const { toast } = useToast();
+  // const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState({
     email: true,
@@ -120,16 +120,16 @@ export default function AccountSettingsPage() {
       // Replace with actual API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      toast({
-        title: "Profile updated",
-        description: "Your profile information has been updated successfully.",
-      });
+      // toast({
+      //   title: "Profile updated",
+      //   description: "Your profile information has been updated successfully.",
+      // });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
+      // toast({
+      //   title: "Error",
+      //   description: "Failed to update profile. Please try again.",
+      //   variant: "destructive",
+      // });
     } finally {
       setIsLoading(false);
     }
@@ -143,10 +143,10 @@ export default function AccountSettingsPage() {
       // Replace with actual API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      toast({
-        title: "Password updated",
-        description: "Your password has been changed successfully.",
-      });
+      // toast({
+      //   title: "Password updated",
+      //   description: "Your password has been changed successfully.",
+      // });
 
       // Reset form after successful submission
       passwordForm.reset({
@@ -155,12 +155,12 @@ export default function AccountSettingsPage() {
         confirmPassword: "",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          "Failed to update password. Please check your current password and try again.",
-        variant: "destructive",
-      });
+      // toast({
+      //   title: "Error",
+      //   description:
+      //     "Failed to update password. Please check your current password and try again.",
+      //   variant: "destructive",
+      // });
     } finally {
       setIsLoading(false);
     }
@@ -178,19 +178,19 @@ export default function AccountSettingsPage() {
         // Replace with actual API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        toast({
-          title: "Account deleted",
-          description: "Your account has been deleted successfully.",
-        });
+        // toast({
+        //   title: "Account deleted",
+        //   description: "Your account has been deleted successfully.",
+        // });
 
         // Redirect to home page or login
         // window.location.href = "/";
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to delete account. Please try again.",
-          variant: "destructive",
-        });
+        // toast({
+        //   title: "Error",
+        //   description: "Failed to delete account. Please try again.",
+        //   variant: "destructive",
+        // });
       } finally {
         setIsLoading(false);
       }
@@ -469,12 +469,12 @@ export default function AccountSettingsPage() {
           <CardFooter>
             <Button
               variant="outline"
-              onClick={() => {
-                toast({
-                  title: "Notification preferences updated",
-                  description: "Your notification preferences have been saved.",
-                });
-              }}
+              // onClick={() => {
+              //   toast({
+              //     title: "Notification preferences updated",
+              //     description: "Your notification preferences have been saved.",
+              //   });
+              // }}
             >
               Save preferences
             </Button>

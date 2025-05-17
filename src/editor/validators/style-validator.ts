@@ -6,6 +6,7 @@ import {
   MAX_CSS_VALUE_LENGTH,
 } from "../../lib/constants/styling";
 import type { StyleValidationResult } from "../../types/editor";
+import { ProjectValidationResult } from "../../types/project";
 
 /**
  * Validates a CSS property name to ensure it's in the list of allowed properties
@@ -140,7 +141,7 @@ export const validateStyleObject = (
 
     if (isValidProperty && isValidValue) {
       // Add to valid styles
-      result.validStyles[property] = value;
+      (result.validStyles as Record<string, any>)[property] = value;
     } else {
       // Track validation errors
       result.isValid = false;
@@ -154,6 +155,71 @@ export const validateStyleObject = (
   });
 
   return result;
+};
+
+/**
+ * Validates a map of styles keyed by component IDs
+ * @param styleMap - Object mapping component IDs to style objects
+ * @returns Project validation result with errors and warnings
+ */
+export const validateStyleMap = (
+  styleMap: Record<string, CSSProperties>
+): ProjectValidationResult => {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  // If no styles, return valid result
+  if (!styleMap || Object.keys(styleMap).length === 0) {
+    return {
+      valid: true,
+      errors: [],
+      warnings: [],
+    };
+  }
+
+  // Validate each component's styles
+  for (const [componentId, styles] of Object.entries(styleMap)) {
+    if (!styles) continue;
+
+    const styleResult = validateStyleObject(styles);
+
+    if (!styleResult.isValid) {
+      // Get all error messages for this component
+      const styleErrors = Object.entries(styleResult.errors)
+        .map(([prop, error]) => error)
+        .join("; ");
+
+      errors.push(
+        `Invalid styles for component ${componentId}: ${styleErrors}`
+      );
+    }
+
+    // Check for potentially problematic style combinations
+    if (
+      styles.position === "absolute" &&
+      !styles.top &&
+      !styles.left &&
+      !styles.bottom &&
+      !styles.right
+    ) {
+      warnings.push(
+        `Component ${componentId} uses absolute positioning without any positioning values`
+      );
+    }
+
+    // Check for z-index values that might be too high
+    if (styles.zIndex && Number(styles.zIndex) > 1000) {
+      warnings.push(
+        `Component ${componentId} has a very high z-index: ${styles.zIndex}`
+      );
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
 };
 
 /**
@@ -200,7 +266,9 @@ export const areStylesEqual = (
   }
 
   return keysA.every(
-    (key) => styleB.hasOwnProperty(key) && styleA[key] === styleB[key]
+    (key) =>
+      styleB.hasOwnProperty(key) &&
+      styleA[key as keyof CSSProperties] === styleB[key as keyof CSSProperties]
   );
 };
 
@@ -216,7 +284,7 @@ export const isStyleEmpty = (styles: CSSProperties): boolean => {
   if (styleKeys.length === 0) return true;
 
   return styleKeys.every((key) => {
-    const value = styles[key];
+    const value = styles[key as keyof CSSProperties];
     return (
       value === "" ||
       value === undefined ||
@@ -226,12 +294,16 @@ export const isStyleEmpty = (styles: CSSProperties): boolean => {
   });
 };
 
-export default {
+// Default export
+const styleValidator = {
   validateCSSProperty,
   validateCSSValue,
   validateStyleObject,
+  validateStyleMap, // Added the missing method
   sanitizeStyles,
   validateStyleProperty,
   areStylesEqual,
   isStyleEmpty,
 };
+
+export default styleValidator;

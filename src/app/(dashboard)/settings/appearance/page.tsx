@@ -1,7 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
@@ -25,7 +23,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import {
@@ -35,7 +32,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
+// Define schemas with specific types
 const appearanceFormSchema = z.object({
   theme: z.enum(["light", "dark", "system"], {
     required_error: "Please select a theme.",
@@ -49,33 +49,33 @@ const appearanceFormSchema = z.object({
   borderRadius: z.enum(["none", "small", "medium", "large"], {
     required_error: "Please select a border radius.",
   }),
-  animation: z.boolean().default(true),
-  compactMode: z.boolean().default(false),
+  animation: z.boolean(),
+  compactMode: z.boolean(),
 });
 
 const editorFormSchema = z.object({
-  autosave: z.boolean().default(true),
-  gridSnapping: z.boolean().default(true),
-  showGuides: z.boolean().default(true),
-  previewOnSave: z.boolean().default(false),
+  autosave: z.boolean(),
+  gridSnapping: z.boolean(),
+  showGuides: z.boolean(),
+  previewOnSave: z.boolean(),
   defaultView: z.enum(["desktop", "tablet", "mobile"], {
     required_error: "Please select a default view.",
   }),
-  componentLabels: z.boolean().default(true),
-  componentOutlines: z.boolean().default(true),
+  componentLabels: z.boolean(),
+  componentOutlines: z.boolean(),
 });
 
+// Infer types from schemas
 type AppearanceFormValues = z.infer<typeof appearanceFormSchema>;
 type EditorFormValues = z.infer<typeof editorFormSchema>;
 
 export default function AppearanceSettingsPage() {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark" | "system">(
     "system"
   );
 
-  // Form for appearance settings
+  // Form for appearance settings with explicit type
   const appearanceForm = useForm<AppearanceFormValues>({
     resolver: zodResolver(appearanceFormSchema),
     defaultValues: {
@@ -88,7 +88,7 @@ export default function AppearanceSettingsPage() {
     },
   });
 
-  // Form for editor settings
+  // Form for editor settings with explicit type
   const editorForm = useForm<EditorFormValues>({
     resolver: zodResolver(editorFormSchema),
     defaultValues: {
@@ -124,7 +124,7 @@ export default function AppearanceSettingsPage() {
       setCurrentTheme(savedTheme);
       appearanceForm.setValue("theme", savedTheme);
     }
-  }, []);
+  }, [appearanceForm]);
 
   async function onAppearanceSubmit(data: AppearanceFormValues) {
     setIsLoading(true);
@@ -153,16 +153,9 @@ export default function AppearanceSettingsPage() {
         document.documentElement.classList.remove("dark");
       }
 
-      toast({
-        title: "Appearance updated",
-        description: "Your appearance settings have been saved.",
-      });
+      // Success message would go here (toast removed)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update appearance settings.",
-        variant: "destructive",
-      });
+      // Error message would go here (toast removed)
     } finally {
       setIsLoading(false);
     }
@@ -178,16 +171,9 @@ export default function AppearanceSettingsPage() {
       // Save editor preferences to localStorage
       localStorage.setItem("editorPreferences", JSON.stringify(data));
 
-      toast({
-        title: "Editor settings updated",
-        description: "Your editor preferences have been saved.",
-      });
+      // Success message would go here (toast removed)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update editor settings.",
-        variant: "destructive",
-      });
+      // Error message would go here (toast removed)
     } finally {
       setIsLoading(false);
     }
@@ -224,11 +210,7 @@ export default function AppearanceSettingsPage() {
       localStorage.removeItem("theme");
       localStorage.removeItem("editorPreferences");
 
-      toast({
-        title: "Settings reset",
-        description:
-          "All appearance and editor settings have been reset to default values.",
-      });
+      // Success message would go here (toast removed)
     }
   }
 
@@ -690,10 +672,7 @@ export default function AppearanceSettingsPage() {
                 <Switch
                   checked={false}
                   onCheckedChange={() => {
-                    toast({
-                      title: "Setting updated",
-                      description: "Reduced motion preference has been saved.",
-                    });
+                    // Toast removed
                   }}
                 />
               </div>
@@ -708,10 +687,7 @@ export default function AppearanceSettingsPage() {
                 <Switch
                   checked={false}
                   onCheckedChange={() => {
-                    toast({
-                      title: "Setting updated",
-                      description: "High contrast preference has been saved.",
-                    });
+                    // Toast removed
                   }}
                 />
               </div>
@@ -728,11 +704,7 @@ export default function AppearanceSettingsPage() {
                 <Switch
                   checked={true}
                   onCheckedChange={() => {
-                    toast({
-                      title: "Setting updated",
-                      description:
-                        "Screen reader optimization preference has been saved.",
-                    });
+                    // Toast removed
                   }}
                 />
               </div>
@@ -742,11 +714,7 @@ export default function AppearanceSettingsPage() {
             <Button
               variant="outline"
               onClick={() => {
-                toast({
-                  title: "Accessibility settings updated",
-                  description:
-                    "Your accessibility preferences have been saved.",
-                });
+                // Toast removed
               }}
             >
               Save Accessibility Settings

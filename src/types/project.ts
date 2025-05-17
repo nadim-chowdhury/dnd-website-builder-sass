@@ -1,44 +1,35 @@
-import { Component } from "./components";
+export interface Component {
+  // Base component properties
+  id: string;
+  type: string;
+  props?: Record<string, any>;
+}
 
-// Project status enum
+// Project status enum (removed duplicate)
 export enum ProjectStatus {
   DRAFT = "DRAFT",
   PUBLISHED = "PUBLISHED",
   ARCHIVED = "ARCHIVED",
 }
 
-// Project base interface
-export interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  status: ProjectStatus;
-  thumbnail?: string;
-  pages?: ProjectPage[];
-  settings: ProjectSettings;
-  userId: string;
-  teamId?: string;
-  tags?: string[];
-  isPublished: boolean;
-  publishedAt?: string;
-  archivedAt?: string;
-  createdAt: string;
-  updatedAt: string;
-  components: ProjectComponent[];
-  meta?: ProjectMeta;
-  isTemplate?: boolean;
-  templateId?: string;
-  version?: string;
-  lastEdited?: string;
-}
+// Project types enum
+export type ProjectType =
+  | "website"
+  | "landing-page"
+  | "blog"
+  | "portfolio"
+  | "e-commerce"
+  | "webapp"
+  | "template";
 
-// Project page interface
-export interface ProjectPage {
+// Unified PageData interface to be consistent between Project and ProjectPage
+export interface PageData {
   id: string;
   name: string;
-  slug: string;
-  isHome: boolean;
+  path: string;
+  slug: string; // Added missing slug property
   components: ProjectComponent[];
+  isHome: boolean;
   metadata?: {
     title?: string;
     description?: string;
@@ -52,36 +43,34 @@ export interface ProjectComponent {
   type: string;
   props: Record<string, any>;
   children?: ProjectComponent[];
+  content?: {
+    text?: string;
+    [key: string]: any;
+  };
   styles?: Record<string, any>;
   parentId?: string;
 }
 
 // Project metadata
-export interface ProjectMeta {
-  author: string;
-  authorId: string;
+export interface ProjectMetadata {
+  createdAt: string;
+  updatedAt: string;
+  author?: string;
+  authorId?: string;
   lastModifiedBy?: string;
   lastModifiedById?: string;
   tags?: string[];
   customData?: Record<string, any>;
 }
 
-// Project settings
-export interface ProjectSettings {
-  seo: SEOSettings;
-  analytics: AnalyticsSettings;
-  styling: StylingSettings;
-  functionality: FunctionalitySettings;
-  hosting: HostingSettings;
-  customCode: CustomCodeSettings;
-  fonts: FontSettings[];
-}
+// Alias for backward compatibility
+export type ProjectMeta = ProjectMetadata;
 
 // SEO settings
 export interface SEOSettings {
   title: string;
-  description?: string;
-  keywords?: string[];
+  description: string;
+  keywords: string[];
   favicon?: string;
   socialImage?: string;
   canonicalUrl?: string;
@@ -200,6 +189,104 @@ export interface FontSettings {
   url?: string;
 }
 
+// Responsive breakpoints
+export interface ResponsiveBreakpoints {
+  mobile?: number;
+  tablet?: number;
+  desktop?: number;
+}
+
+// Theme settings
+export interface ThemeSettings {
+  colors?: Record<string, string>;
+  fonts?: {
+    heading?: string;
+    body?: string;
+    [key: string]: string | undefined;
+  };
+}
+
+// Project settings - consolidated from both files
+export interface ProjectSettings {
+  seo: SEOSettings;
+  responsive?: {
+    breakpoints?: ResponsiveBreakpoints;
+    enabledDevices?: string[];
+  };
+  theme?: ThemeSettings;
+  favicon: string;
+  analytics?: AnalyticsSettings;
+  styling?: StylingSettings;
+  functionality?: FunctionalitySettings;
+  hosting?: HostingSettings;
+  customCode?: CustomCodeSettings;
+  fonts: string[] | FontSettings[];
+  colors: {
+    primary: string;
+    secondary: string;
+    background: string;
+    text: string;
+    [key: string]: string;
+  };
+}
+
+// Publish settings
+export interface PublishSettings {
+  domains?: string[];
+  assets?: {
+    path?: string;
+    size?: number;
+    type?: string;
+    [key: string]: any;
+  }[];
+  [key: string]: any;
+}
+
+// Project validation result
+export interface ProjectValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+  publishable?: boolean;
+}
+
+// Project validation options
+export interface ProjectValidationOptions {
+  strictMode?: boolean;
+  [key: string]: any;
+}
+
+// Consolidated Project interface that combines both files
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  status?: ProjectStatus;
+  type?: ProjectType;
+  thumbnail?: string;
+  pages: PageData[];
+  settings: ProjectSettings;
+  publishSettings?: PublishSettings;
+  userId?: string;
+  teamId?: string;
+  tags?: string[];
+  isPublished?: boolean;
+  published: boolean;
+  publishedUrl: string;
+  publishedAt?: string;
+  archivedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  components?: ProjectComponent[];
+  styles?: Record<string, any>;
+  metadata?: ProjectMetadata;
+  meta?: ProjectMetadata;
+  isTemplate?: boolean;
+  templateId?: string;
+  version?: string;
+  lastEdited?: string;
+}
+
 // Project template
 export interface ProjectTemplate {
   id: string;
@@ -207,8 +294,10 @@ export interface ProjectTemplate {
   description?: string;
   category: string;
   thumbnail: string;
-  project: Omit<Project, "id" | "createdAt" | "updatedAt" | "status">;
+  pages: PageData[];
+  settings: ProjectSettings;
   tags?: string[];
+  createdAt: string;
 }
 
 // Project collaborator
@@ -349,3 +438,31 @@ export interface SortOrder {
   field: "name" | "createdAt" | "updatedAt";
   direction: "asc" | "desc";
 }
+
+// Define the ProjectsState interface
+export interface ProjectsState {
+  activeProject: Project | null;
+  projects: Project[];
+  isLoading: boolean;
+  error: string | null;
+  selectedProjectId: string | null;
+  projectHistory: Record<string, any[]>;
+  filterStatus: ProjectStatus | null;
+  searchTerm: string;
+  sortBy: string;
+  sortDirection: "asc" | "desc";
+}
+
+// Initial state for projects
+export const initialProjectsState: ProjectsState = {
+  activeProject: null,
+  projects: [],
+  isLoading: false,
+  error: null,
+  selectedProjectId: null,
+  projectHistory: {},
+  filterStatus: null,
+  searchTerm: "",
+  sortBy: "updatedAt",
+  sortDirection: "desc",
+};

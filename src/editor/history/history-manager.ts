@@ -6,6 +6,16 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 const MAX_SNAPSHOTS = 50;
 
 /**
+ * Interface for history actions
+ */
+interface HistoryAction {
+  projectId: string;
+  type: string;
+  data: any;
+  timestamp?: number;
+}
+
+/**
  * Snapshot interface for storing application state
  */
 interface StateSnapshot {
@@ -23,17 +33,130 @@ export class HistoryManager {
   private currentSnapshotIndex: number = -1;
   private isUndoRedoInProgress: boolean = false;
   private commandQueue: CommandQueue;
+  private transactionInProgress: boolean = false;
+  private preTransactionState: AppState | null = null;
+  private currentState: AppState | null = null;
+  private projectHistories: Map<string, HistoryAction[]> = new Map();
 
   constructor(commandQueue: CommandQueue) {
     this.commandQueue = commandQueue;
 
     // Set up the callback to handle state changes from command execution
     this.commandQueue.setStateChangeCallback((newState: AppState) => {
+      // Keep track of current state
+      this.currentState = newState;
+
       // We don't want to create snapshots during undo/redo operations
-      if (!this.isUndoRedoInProgress) {
+      if (!this.isUndoRedoInProgress && !this.transactionInProgress) {
         this.addInternalSnapshot(newState, "Command Execution");
       }
     });
+  }
+
+  /**
+   * Initialize history for a specific project
+   */
+  public initializeProjectHistory(projectId: string): void {
+    // If this project doesn't have a history yet, create one
+    if (!this.projectHistories.has(projectId)) {
+      this.projectHistories.set(projectId, []);
+    } else {
+      // Clear existing history for this project
+      this.projectHistories.set(projectId, []);
+    }
+
+    console.log(`Initialized history for project: ${projectId}`);
+  }
+
+  /**
+   * Add an action to a project's history
+   */
+  public addAction(action: HistoryAction): void {
+    const { projectId } = action;
+
+    // Ensure we have a history for this project
+    if (!this.projectHistories.has(projectId)) {
+      this.initializeProjectHistory(projectId);
+    }
+
+    // Add timestamp if not provided
+    const actionWithTimestamp = {
+      ...action,
+      timestamp: action.timestamp || Date.now(),
+    };
+
+    // Get current history and append the new action
+    const projectHistory = this.projectHistories.get(projectId) || [];
+    projectHistory.push(actionWithTimestamp);
+
+    // Update the history
+    this.projectHistories.set(projectId, projectHistory);
+
+    console.log(`Added action ${action.type} to project ${projectId}`);
+  }
+
+  /**
+   * Get all actions for a specific project
+   */
+  public getProjectActions(projectId: string): HistoryAction[] {
+    return this.projectHistories.get(projectId) || [];
+  }
+
+  /**
+   * Start a transaction - captures the current state to enable atomic operations
+   */
+  public startTransaction(): void {
+    if (this.transactionInProgress) {
+      console.warn(
+        "Transaction already in progress. Nested transactions are not supported."
+      );
+      return;
+    }
+
+    this.transactionInProgress = true;
+    // Store the current state for potential rollback
+    this.preTransactionState = this.currentState;
+  }
+
+  /**
+   * Commit a transaction - creates a snapshot with all changes made during the transaction
+   */
+  public commitTransaction(description: string = "Transaction"): void {
+    if (!this.transactionInProgress) {
+      console.warn("No transaction in progress to commit.");
+      return;
+    }
+
+    // Create a snapshot of the final state
+    if (this.currentState) {
+      this.addInternalSnapshot(this.currentState, description);
+    }
+
+    // Reset transaction state
+    this.transactionInProgress = false;
+    this.preTransactionState = null;
+  }
+
+  /**
+   * Roll back a transaction if needed
+   */
+  public rollbackTransaction(): void {
+    if (!this.transactionInProgress) {
+      console.warn("No transaction in progress to rollback.");
+      return;
+    }
+
+    // If we have a stored pre-transaction state, we could apply it here through dispatch
+    if (this.preTransactionState) {
+      // We would need to dispatch an action to restore this state
+      // This would require access to the dispatch function, which we don't have here
+      // For now, we'll just log a warning
+      console.warn("Transaction rollback requested but not implemented");
+    }
+
+    // Reset transaction state
+    this.transactionInProgress = false;
+    this.preTransactionState = null;
   }
 
   /**
@@ -229,6 +352,7 @@ export class HistoryManager {
   public clearHistory(): void {
     this.snapshots = [];
     this.currentSnapshotIndex = -1;
+    this.projectHistories.clear();
   }
 
   /**
@@ -248,21 +372,25 @@ export class HistoryManager {
 }
 
 // Create and export Redux actions for undo/redo
-export const undoAction = createAsyncThunk(
+export const undoAction = createAsyncThunk<boolean, void, { state: AppState }>(
   "history/undo",
   async (_, { dispatch, getState }) => {
     return await historyManager.undo(dispatch, getState);
   }
 );
 
-export const redoAction = createAsyncThunk(
+export const redoAction = createAsyncThunk<boolean, void, { state: AppState }>(
   "history/redo",
   async (_, { dispatch, getState }) => {
     return await historyManager.redo(dispatch, getState);
   }
 );
 
-export const restoreSnapshot = createAsyncThunk(
+export const restoreSnapshot = createAsyncThunk<
+  Partial<AppState>,
+  string,
+  { state: AppState }
+>(
   "history/restoreSnapshot",
   async (snapshotId: string, { dispatch, getState }) => {
     const snapshot = historyManager.getSnapshot(snapshotId);
@@ -273,13 +401,14 @@ export const restoreSnapshot = createAsyncThunk(
   }
 );
 
-export const saveCurrentSnapshot = createAsyncThunk(
-  "history/saveSnapshot",
-  async (description: string, { getState }) => {
-    const state = getState() as AppState;
-    return historyManager.saveSnapshot(state, description);
-  }
-);
+export const saveCurrentSnapshot = createAsyncThunk<
+  string,
+  string,
+  { state: AppState }
+>("history/saveSnapshot", async (description: string, { getState }) => {
+  const state = getState();
+  return historyManager.saveSnapshot(state, description);
+});
 
 export const clearHistoryAction = createAsyncThunk(
   "history/clearHistory",

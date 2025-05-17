@@ -5,10 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProjects } from "@/services/projects";
-import { useTemplates } from "@/services/templates";
-import { ProjectSerializer } from "@/editor/serializer/project-serializer";
-import { Renderer } from "@/editor/engine/renderer";
+// import { useProjects } from "@/services/projects";
+// import { useTemplates } from "@/services/templates";
+// import { ProjectSerializer } from "@/editor/serializer/project-serializer";
+// import { Renderer } from "@/editor/engine/renderer";
+import { useProjects } from "@/hooks/use-project";
+import { useTemplates } from "@/hooks/use-template";
 
 interface DeviceFrame {
   name: string;

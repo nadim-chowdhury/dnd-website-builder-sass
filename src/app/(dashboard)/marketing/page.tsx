@@ -2,388 +2,310 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
-import Image from "next/image";
+import { Globe, Share2, BarChart3, ArrowRight, Check } from "lucide-react";
 
 export default function MarketingPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
-      <section className="flex flex-col items-center justify-center text-center mb-16">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-          Market Your Website <span className="text-primary">Effectively</span>
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-3xl mb-8">
-          Use our marketing tools to promote your website, attract visitors, and
-          grow your online presence.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Button asChild size="lg">
-            <Link href="/dashboard/marketing/features">Explore Features</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/dashboard/marketing/pricing">View Pricing</Link>
-          </Button>
-        </div>
-      </section>
-
-      <section className="mb-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>SEO Optimization</CardTitle>
-              <CardDescription>
-                Improve your search engine rankings
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-40 bg-muted rounded-md flex items-center justify-center mb-4">
-                <svg
-                  className="h-16 w-16 text-muted-foreground"
-                  fill="none"
-                  height="24"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="2" x2="22" y1="12" y2="12" />
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Our built-in SEO tools help you optimize your website content
-                for better search engine visibility.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button asChild variant="ghost" className="w-full">
-                <Link href="/dashboard/marketing/features#seo">Learn More</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Social Media Integration</CardTitle>
-              <CardDescription>Connect with your audience</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-40 bg-muted rounded-md flex items-center justify-center mb-4">
-                <svg
-                  className="h-16 w-16 text-muted-foreground"
-                  fill="none"
-                  height="24"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                </svg>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Easily integrate social media profiles and sharing capabilities
-                to expand your reach.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button asChild variant="ghost" className="w-full">
-                <Link href="/dashboard/marketing/features#social">
-                  Learn More
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Analytics Dashboard</CardTitle>
-              <CardDescription>Track your performance</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-40 bg-muted rounded-md flex items-center justify-center mb-4">
-                <svg
-                  className="h-16 w-16 text-muted-foreground"
-                  fill="none"
-                  height="24"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <line x1="18" x2="18" y1="20" y2="10" />
-                  <line x1="12" x2="12" y1="20" y2="4" />
-                  <line x1="6" x2="6" y1="20" y2="14" />
-                </svg>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Monitor visitor behavior, traffic sources, and engagement
-                metrics to optimize your strategy.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button asChild variant="ghost" className="w-full">
-                <Link href="/dashboard/marketing/features#analytics">
-                  Learn More
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      </section>
-
-      <section className="mb-20">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Marketing Success Stories</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            See how our customers have used our marketing tools to achieve their
-            goals.
+    <div className="bg-gradient-to-b from-violet-50 to-white min-h-screen">
+      <div className="container mx-auto px-4 py-16">
+        {/* Hero Section */}
+        <section className="flex flex-col items-center justify-center text-center mb-24">
+          <div className="mb-6 inline-block rounded-full bg-indigo-100 px-3 py-1 text-sm text-indigo-600 font-medium">
+            Marketing Tools
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6">
+            Grow Your Online{" "}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
+              Presence
+            </span>
+          </h1>
+          <p className="text-xl text-gray-500 max-w-2xl mb-10">
+            Simple, powerful marketing tools to help you attract visitors and
+            convert them into customers.
           </p>
-        </div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              asChild
+              size="lg"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
+            >
+              <Link href="/marketing/features">Get Started</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="border-indigo-200 hover:bg-indigo-50 text-indigo-600"
+            >
+              <Link href="/marketing/pricing">View Pricing</Link>
+            </Button>
+          </div>
+        </section>
 
-        <Tabs defaultValue="case1" className="max-w-4xl mx-auto">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="case1">E-commerce</TabsTrigger>
-            <TabsTrigger value="case2">Blog</TabsTrigger>
-            <TabsTrigger value="case3">Portfolio</TabsTrigger>
-          </TabsList>
-          <TabsContent value="case1" className="mt-6">
-            <div className="flex flex-col md:flex-row gap-8 items-center">
-              <div className="w-full md:w-1/2">
-                <h3 className="text-2xl font-bold mb-2">Online Boutique</h3>
-                <p className="text-muted-foreground mb-4">
-                  A small fashion boutique increased online sales by 150% using
-                  our marketing tools.
-                </p>
-                <ul className="space-y-2">
-                  <li className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-primary mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
-                    SEO optimization increased organic traffic by 200%
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-primary mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
-                    Social media integration expanded customer reach
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-primary mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
-                    Analytics helped optimize product listings
-                  </li>
-                </ul>
-              </div>
-              <div className="w-full md:w-1/2 bg-muted rounded-lg h-64 flex items-center justify-center">
-                <p className="text-muted-foreground">Case Study Image</p>
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="case2" className="mt-6">
-            <div className="flex flex-col md:flex-row gap-8 items-center">
-              <div className="w-full md:w-1/2">
-                <h3 className="text-2xl font-bold mb-2">Lifestyle Blog</h3>
-                <p className="text-muted-foreground mb-4">
-                  A lifestyle blogger doubled their subscriber base in just 3
-                  months.
-                </p>
-                <ul className="space-y-2">
-                  <li className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-primary mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
-                    Content optimization improved search rankings
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-primary mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
-                    Social sharing boosted content visibility
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-primary mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
-                    Email campaign integration increased retention
-                  </li>
-                </ul>
-              </div>
-              <div className="w-full md:w-1/2 bg-muted rounded-lg h-64 flex items-center justify-center">
-                <p className="text-muted-foreground">Case Study Image</p>
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="case3" className="mt-6">
-            <div className="flex flex-col md:flex-row gap-8 items-center">
-              <div className="w-full md:w-1/2">
-                <h3 className="text-2xl font-bold mb-2">Freelance Designer</h3>
-                <p className="text-muted-foreground mb-4">
-                  A graphic designer attracted 5 major clients within the first
-                  month of optimizing their portfolio site.
-                </p>
-                <ul className="space-y-2">
-                  <li className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-primary mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
-                    Portfolio optimization made work discoverable
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-primary mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
-                    Industry-specific SEO increased visibility
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-primary mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      ></path>
-                    </svg>
-                    Analytics guided portfolio improvements
-                  </li>
-                </ul>
-              </div>
-              <div className="w-full md:w-1/2 bg-muted rounded-lg h-64 flex items-center justify-center">
-                <p className="text-muted-foreground">Case Study Image</p>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </section>
+        {/* Features Section */}
+        <section className="mb-24">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardHeader className="pb-4">
+                <div className="mb-4 p-3 inline-flex items-center justify-center rounded-full bg-teal-100 text-teal-600">
+                  <Globe className="h-6 w-6" />
+                </div>
+                <CardTitle className="text-xl">SEO Optimization</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gray-500">
+                Our built-in SEO tools help you optimize your website content
+                for better search engine visibility and ranking.
+              </CardContent>
+              <CardFooter>
+                <Link
+                  href="/marketing/features#seo"
+                  className="text-teal-600 inline-flex items-center hover:text-teal-700"
+                >
+                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </CardFooter>
+            </Card>
 
-      <section className="text-center">
-        <h2 className="text-3xl font-bold mb-4">
-          Ready to Boost Your Online Presence?
-        </h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-          Explore our marketing features or check out our pricing plans to get
-          started.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg">
-            <Link href="/dashboard/marketing/features">View All Features</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/dashboard/marketing/pricing">See Pricing Plans</Link>
-          </Button>
-        </div>
-      </section>
+            <Card className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardHeader className="pb-4">
+                <div className="mb-4 p-3 inline-flex items-center justify-center rounded-full bg-pink-100 text-pink-600">
+                  <Share2 className="h-6 w-6" />
+                </div>
+                <CardTitle className="text-xl">Social Integration</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gray-500">
+                Connect your social media profiles and enable sharing
+                capabilities to expand your reach across platforms.
+              </CardContent>
+              <CardFooter>
+                <Link
+                  href="/marketing/features#social"
+                  className="text-pink-600 inline-flex items-center hover:text-pink-700"
+                >
+                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </CardFooter>
+            </Card>
+
+            <Card className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardHeader className="pb-4">
+                <div className="mb-4 p-3 inline-flex items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                  <BarChart3 className="h-6 w-6" />
+                </div>
+                <CardTitle className="text-xl">Analytics Dashboard</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gray-500">
+                Monitor visitor behavior, traffic sources, and engagement
+                metrics to refine your marketing strategy.
+              </CardContent>
+              <CardFooter>
+                <Link
+                  href="/marketing/features#analytics"
+                  className="text-amber-600 inline-flex items-center hover:text-amber-700"
+                >
+                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </CardFooter>
+            </Card>
+          </div>
+        </section>
+
+        {/* Case Studies Section */}
+        <section className="mb-24">
+          <div className="text-center mb-12">
+            <div className="mb-3 inline-block rounded-full bg-purple-100 px-3 py-1 text-sm text-purple-600 font-medium">
+              Success Stories
+            </div>
+            <h2 className="text-3xl font-bold mb-4">
+              See What Our Customers Have Achieved
+            </h2>
+            <p className="text-gray-500 max-w-2xl mx-auto">
+              Real results from businesses that have used our marketing tools.
+            </p>
+          </div>
+
+          <Tabs defaultValue="case1" className="max-w-4xl mx-auto">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-xl">
+              <TabsTrigger
+                value="case1"
+                className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                E-commerce
+              </TabsTrigger>
+              <TabsTrigger
+                value="case2"
+                className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                Content Creator
+              </TabsTrigger>
+              <TabsTrigger
+                value="case3"
+                className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                Portfolio
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="case1" className="mt-8">
+              <div className="flex flex-col md:flex-row gap-8 items-center bg-white p-6 rounded-xl shadow-sm">
+                <div className="w-full md:w-1/2">
+                  <h3 className="text-2xl font-bold mb-2">Fashion Boutique</h3>
+                  <p className="text-gray-500 mb-6">
+                    Increased sales by 150% with targeted SEO and social
+                    strategies.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <div className="mr-3 mt-1 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-green-100 p-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span>200% increase in organic search traffic</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="mr-3 mt-1 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-green-100 p-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span>45% higher engagement through social media</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="mr-3 mt-1 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-green-100 p-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span>
+                        30% conversion rate improvement with analytics
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="w-full md:w-1/2 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg h-64 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-purple-600 mb-2 text-5xl font-bold">
+                      150%
+                    </div>
+                    <p className="text-gray-600">Sales Increase</p>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="case2" className="mt-8">
+              <div className="flex flex-col md:flex-row gap-8 items-center bg-white p-6 rounded-xl shadow-sm">
+                <div className="w-full md:w-1/2">
+                  <h3 className="text-2xl font-bold mb-2">Lifestyle Blogger</h3>
+                  <p className="text-gray-500 mb-6">
+                    Doubled subscriber base in just 3 months with content
+                    optimization.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <div className="mr-3 mt-1 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-green-100 p-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span>Top 3 search rankings for target keywords</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="mr-3 mt-1 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-green-100 p-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span>75% increase in social shares per post</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="mr-3 mt-1 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-green-100 p-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span>25% boost in email open rates</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="w-full md:w-1/2 bg-gradient-to-br from-pink-100 to-orange-100 rounded-lg h-64 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-pink-600 mb-2 text-5xl font-bold">
+                      2x
+                    </div>
+                    <p className="text-gray-600">Subscriber Growth</p>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="case3" className="mt-8">
+              <div className="flex flex-col md:flex-row gap-8 items-center bg-white p-6 rounded-xl shadow-sm">
+                <div className="w-full md:w-1/2">
+                  <h3 className="text-2xl font-bold mb-2">
+                    Freelance Designer
+                  </h3>
+                  <p className="text-gray-500 mb-6">
+                    Secured 5 major clients within one month of portfolio
+                    optimization.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <div className="mr-3 mt-1 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-green-100 p-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span>60% increase in portfolio discoverability</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="mr-3 mt-1 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-green-100 p-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span>10x more traffic from design community sites</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="mr-3 mt-1 flex-shrink-0 inline-flex items-center justify-center rounded-full bg-green-100 p-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span>Improved conversion from portfolio visits</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="w-full md:w-1/2 bg-gradient-to-br from-teal-100 to-blue-100 rounded-lg h-64 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-teal-600 mb-2 text-5xl font-bold">
+                      5
+                    </div>
+                    <p className="text-gray-600">Major Clients</p>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </section>
+
+        {/* CTA Section */}
+        <section className="text-center bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-12 rounded-2xl shadow-lg">
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to Transform Your Online Presence?
+          </h2>
+          <p className="max-w-2xl mx-auto mb-8 opacity-90">
+            Join thousands of businesses that have already boosted their growth
+            with our marketing tools.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              asChild
+              size="lg"
+              className="bg-white hover:bg-gray-100 text-indigo-600"
+            >
+              <Link href="/marketing/features">Get Started Today</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="border-white border-2 text-white hover:bg-white/10"
+            >
+              <Link href="/marketing/pricing">View Pricing</Link>
+            </Button>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

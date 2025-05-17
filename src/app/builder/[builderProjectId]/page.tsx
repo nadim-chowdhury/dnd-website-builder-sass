@@ -24,8 +24,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useEditorState } from "@/hooks/use-editor-state";
-import { useProjects } from "@/services/projects";
-import { setProject } from "@/redux/slices/builderSlice";
+import { useProjects } from "@/hooks/use-project";
+import { setCurrentProject } from "@/redux/slices/projectsSlice";
+// import { useProjects } from "@/services/projects";
+// import { setProject } from "@/redux/slices/builderSlice";
 
 type ActivePanel = "preview" | "settings" | "export" | "help" | null;
 
@@ -58,7 +60,7 @@ export default function BuilderPage() {
           return;
         }
 
-        dispatch(setProject(project));
+        dispatch(setCurrentProject(project));
       } catch (error) {
         console.error("Failed to fetch project:", error);
         setErrorMessage("Failed to load project. Please try again.");

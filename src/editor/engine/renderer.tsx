@@ -1,5 +1,5 @@
 import React, { FC, useState, useEffect, createElement, useMemo } from "react";
-import { ErrorBoundary } from "@/components/common/error-boundary";
+import ErrorBoundary from "@/components/common/error-boundary";
 import componentRegistry from "./component-registry";
 import eventHandler from "./event-handler";
 import stylingEngine from "./styling-engine";

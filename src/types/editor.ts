@@ -1,4 +1,5 @@
 import { Component, ComponentType } from "./components";
+import { CSSProperties } from "react";
 
 // Editor state
 export interface EditorState {
@@ -324,4 +325,24 @@ export interface EditorOptions {
   autoSave: boolean;
   autoSaveInterval: number; // in milliseconds
   defaultBreakpoint: string;
+}
+
+/**
+ * Result of validating a style object
+ */
+export interface StyleValidationResult {
+  /**
+   * Whether the entire style object is valid
+   */
+  isValid: boolean;
+
+  /**
+   * Object containing only the valid styles
+   */
+  validStyles: CSSProperties;
+
+  /**
+   * Object mapping property names to error messages
+   */
+  errors: Record<string, string>;
 }

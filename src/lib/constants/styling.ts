@@ -556,3 +556,139 @@ export const UTILITY_CLASSES = {
     `,
   },
 };
+
+/**
+ * Maximum allowed length for CSS values
+ */
+export const MAX_CSS_VALUE_LENGTH = 500;
+
+/**
+ * List of allowed CSS properties that can be used
+ */
+export const ALLOWED_CSS_PROPERTIES = [
+  // Layout
+  "display",
+  "width",
+  "height",
+  "minWidth",
+  "maxWidth",
+  "minHeight",
+  "maxHeight",
+  "overflow",
+  "overflowX",
+  "overflowY",
+  "visibility",
+  "zIndex",
+  "opacity",
+  "flexDirection",
+  "flexWrap",
+  "flexGrow",
+  "flexShrink",
+  "flexBasis",
+  "flex",
+  "justifyContent",
+  "alignItems",
+  "alignContent",
+  "alignSelf",
+  "order",
+  "gap",
+  "columnGap",
+  "rowGap",
+  "aspectRatio",
+
+  // Typography
+  "fontFamily",
+  "fontSize",
+  "fontWeight",
+  "fontStyle",
+  "lineHeight",
+  "textAlign",
+  "textDecoration",
+  "textTransform",
+  "letterSpacing",
+  "wordSpacing",
+  "color",
+  "wordBreak",
+  "whiteSpace",
+  "textOverflow",
+  "textShadow",
+
+  // Spacing
+  "padding",
+  "paddingTop",
+  "paddingRight",
+  "paddingBottom",
+  "paddingLeft",
+  "margin",
+  "marginTop",
+  "marginRight",
+  "marginBottom",
+  "marginLeft",
+
+  // Border
+  "border",
+  "borderTop",
+  "borderRight",
+  "borderBottom",
+  "borderLeft",
+  "borderWidth",
+  "borderTopWidth",
+  "borderRightWidth",
+  "borderBottomWidth",
+  "borderLeftWidth",
+  "borderStyle",
+  "borderTopStyle",
+  "borderRightStyle",
+  "borderBottomStyle",
+  "borderLeftStyle",
+  "borderColor",
+  "borderTopColor",
+  "borderRightColor",
+  "borderBottomColor",
+  "borderLeftColor",
+  "borderRadius",
+  "borderTopLeftRadius",
+  "borderTopRightRadius",
+  "borderBottomLeftRadius",
+  "borderBottomRightRadius",
+
+  // Background
+  "background",
+  "backgroundColor",
+  "backgroundImage",
+  "backgroundSize",
+  "backgroundPosition",
+  "backgroundRepeat",
+  "backgroundAttachment",
+  "backgroundBlendMode",
+
+  // Position
+  "position",
+  "top",
+  "right",
+  "bottom",
+  "left",
+  "float",
+  "clear",
+
+  // Effects
+  "boxShadow",
+  "filter",
+  "backdropFilter",
+  "transition",
+  "transform",
+  "transformOrigin",
+  "animation",
+];
+
+/**
+ * Regular expression to validate common CSS units (px, em, rem, %, vh, vw, etc.)
+ */
+export const CSS_UNIT_REGEX =
+  /^(-?\d*\.?\d+)(px|em|rem|%|vh|vw|vmin|vmax|ch|ex|cm|mm|in|pt|pc|fr|s|ms|deg|rad|turn)?$/;
+
+/**
+ * Regular expression to validate color values (hex, rgb, rgba, hsl, hsla)
+ */
+export const COLOR_REGEX =
+  /^(#([0-9a-f]{3,8})|(rgb|rgba|hsl|hsla)\(([^()]+)\))$/i;

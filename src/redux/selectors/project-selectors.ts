@@ -2,6 +2,20 @@ import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { Project, ProjectStatus } from "../../types/project";
 
+// Define missing types
+interface Collaborator {
+  userId: string;
+  canEdit: boolean;
+}
+
+// Extended Project interface with missing properties
+// In a real project, these should be added to your actual Project type in types/project.ts
+interface ProjectWithCollaborators extends Project {
+  ownerId: string;
+  collaborators?: Collaborator[];
+  tags?: string[];
+}
+
 // Basic selectors
 export const selectProjectsState = (state: RootState) => state.projects;
 export const selectAllProjects = (state: RootState) => state.projects.projects;
@@ -20,13 +34,16 @@ export const selectRecentProjects = (state: RootState) =>
 // Derived selectors
 export const selectProjectsArray = createSelector(
   [selectAllProjects],
-  (projects) => Object.values(projects)
+  (projects) => Object.values(projects) as ProjectWithCollaborators[]
 );
 
-export const selectCurrentProject = createSelector(
-  [selectAllProjects, selectCurrentProjectId],
-  (projects, currentId) => (currentId ? projects[currentId] : null)
-);
+// Selector to get currentProject from currentProjectId
+export const selectCurrentProject = (state: RootState) => {
+  const { currentProjectId, projects } = state.projects;
+  return currentProjectId
+    ? (projects[currentProjectId] as ProjectWithCollaborators)
+    : null;
+};
 
 export const selectFilteredProjects = createSelector(
   [selectProjectsArray, selectProjectFilters],
@@ -39,21 +56,23 @@ export const selectFilteredProjects = createSelector(
         const searchTerm = filters.searchTerm.toLowerCase();
         const nameMatch = project.name.toLowerCase().includes(searchTerm);
         const descMatch = project.description
-          ?.toLowerCase()
-          .includes(searchTerm);
+          ? project.description.toLowerCase().includes(searchTerm)
+          : false;
         matches = matches && (nameMatch || descMatch);
       }
 
       // Filter by status
       if (filters.status && filters.status.length > 0) {
-        matches = matches && filters.status.includes(project.status);
+        matches =
+          matches &&
+          (project.status ? filters.status.includes(project.status) : false);
       }
 
       // Filter by tags
       if (filters.tags && filters.tags.length > 0) {
-        const projectHasTags = filters.tags.some(
-          (tag) => project.tags && project.tags.includes(tag)
-        );
+        const projectHasTags = project.tags
+          ? filters.tags.some((tag) => project.tags!.includes(tag))
+          : false;
         matches = matches && projectHasTags;
       }
 
@@ -152,7 +171,8 @@ export const selectProjectStats = createSelector(
 
 export const selectProjectById = createSelector(
   [selectAllProjects, (_, projectId: string) => projectId],
-  (projects, projectId) => (projectId ? projects[projectId] : null)
+  (projects, projectId) =>
+    projectId ? (projects[projectId] as ProjectWithCollaborators) : null
 );
 
 export const selectRecentProjectsData = createSelector(
@@ -160,7 +180,9 @@ export const selectRecentProjectsData = createSelector(
   (projects, recentIds) => {
     return recentIds
       .map((id) => projects[id])
-      .filter((project) => project !== undefined);
+      .filter(
+        (project): project is ProjectWithCollaborators => project !== undefined
+      );
   }
 );
 
@@ -202,10 +224,11 @@ export const selectCanUserEditProject = createSelector(
     if (project.ownerId === userId) return true;
 
     // Check if user is a collaborator with edit access
-    return (
-      project.collaborators?.some(
-        (collaborator) => collaborator.userId === userId && collaborator.canEdit
-      ) || false
-    );
+    return project.collaborators
+      ? project.collaborators.some(
+          (collaborator: Collaborator) =>
+            collaborator.userId === userId && collaborator.canEdit
+        )
+      : false;
   }
 );
