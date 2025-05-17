@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import * as templatesService from "@/services/templates";
+import { templatesService } from "@/services/templates";
 import { Template, TemplateCategory } from "@/types/template";
 
 // Define the state interface
@@ -31,8 +31,8 @@ export const fetchTemplates = createAsyncThunk(
   "templates/fetchTemplates",
   async (_, { rejectWithValue }) => {
     try {
-      const templates = await templatesService.getTemplates();
-      return templates;
+      const response = await templatesService.getTemplates();
+      return response.templates; // Extract templates array from TemplateResponse
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to fetch templates"

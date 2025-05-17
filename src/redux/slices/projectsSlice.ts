@@ -4,8 +4,9 @@ import {
   ProjectStatus,
   ProjectFilters,
   SortOrder,
+  UpdateProjectRequest,
 } from "../../types/project";
-import { RootState } from "../store";
+import { RootState } from "../hooks";
 import * as projectsService from "../../services/projects";
 
 interface ProjectsState {
@@ -43,8 +44,8 @@ export const fetchProjects = createAsyncThunk(
   "projects/fetchProjects",
   async (_, { rejectWithValue }) => {
     try {
-      const projects = await projectsService.getProjects();
-      return projects;
+      const response = await projectsService.getProjects();
+      return response.projects;
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to fetch projects"
@@ -87,7 +88,7 @@ export const createProject = createAsyncThunk(
 export const updateProject = createAsyncThunk(
   "projects/updateProject",
   async (
-    { id, changes }: { id: string; changes: Partial<Project> },
+    { id, changes }: { id: string; changes: UpdateProjectRequest },
     { rejectWithValue }
   ) => {
     try {
@@ -154,6 +155,7 @@ export const publishProject = createAsyncThunk(
     try {
       const updatedProject = await projectsService.updateProject(projectId, {
         status: ProjectStatus.PUBLISHED,
+        isPublished: true,
         publishedAt: new Date().toISOString(),
       });
       return updatedProject;
@@ -171,6 +173,7 @@ export const unpublishProject = createAsyncThunk(
     try {
       const updatedProject = await projectsService.updateProject(projectId, {
         status: ProjectStatus.DRAFT,
+        isPublished: false,
       });
       return updatedProject;
     } catch (error) {

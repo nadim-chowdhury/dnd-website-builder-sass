@@ -1,4 +1,4 @@
-import { apiClient } from "./api-client";
+import apiClient from "./api-client";
 import {
   Template,
   TemplateCategory,
@@ -30,6 +30,14 @@ export const templatesService = {
    */
   getTemplateById: async (templateId: string): Promise<Template> => {
     return apiClient.get<Template>(`/templates/${templateId}`);
+  },
+
+  /**
+   * Get all template categories
+   * @returns Promise with category array
+   */
+  getTemplateCategories: async (): Promise<TemplateCategory[]> => {
+    return apiClient.get<TemplateCategory[]>("/templates/categories");
   },
 
   /**

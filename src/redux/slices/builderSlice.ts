@@ -1,11 +1,26 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   ComponentType,
-  Component,
   EditorMode,
   BreakpointType,
   DragState,
 } from "../../types/components";
+
+// Define a serializable reference type instead of using HTMLElement directly
+export type DomRefID = string;
+
+// Define the Component type directly in the file to ensure it has all needed properties
+export interface Component {
+  id: string;
+  name: string;
+  type: ComponentType;
+  parentId: string | null;
+  order: number;
+  props?: Record<string, any>;
+  styles?: Record<string, any>;
+  children?: string[];
+  // Add any other properties that your Component type needs
+}
 
 // Define the shape of the builder state
 interface BuilderState {
@@ -30,7 +45,7 @@ interface BuilderState {
   dragState: DragState;
   unsavedChanges: boolean;
   activePanel: string | null;
-  domRefs: Record<string, HTMLElement | null>;
+  domRefIds: Record<string, DomRefID | null>; // Store IDs instead of DOM elements
   error: string | null;
 }
 
@@ -65,9 +80,27 @@ const initialState: BuilderState = {
   },
   unsavedChanges: false,
   activePanel: "components",
-  domRefs: {},
+  domRefIds: {}, // Changed from domRefs to domRefIds
   error: null,
 };
+
+// Helper function to save to history
+function saveToHistory(state: BuilderState): void {
+  state.history.past = [...state.history.past, { ...state.components }];
+  state.history.future = [];
+
+  // Limit history size
+  if (state.history.past.length > state.history.maxHistoryItems) {
+    state.history.past.shift();
+  }
+}
+
+// Helper function to generate component ID
+function generateComponentId(type: ComponentType): string {
+  const typePrefix = type.toLowerCase();
+  const randomId = Math.random().toString(36).substring(2, 10);
+  return `${typePrefix}-${randomId}`;
+}
 
 // Create the slice
 const builderSlice = createSlice({
@@ -98,7 +131,8 @@ const builderSlice = createSlice({
 
       // Before removing, check for and remove any children
       Object.keys(state.components).forEach((componentId) => {
-        if (state.components[componentId].parentId === id) {
+        const component = state.components[componentId];
+        if (component.parentId === id) {
           delete state.components[componentId];
         }
       });
@@ -150,10 +184,12 @@ const builderSlice = createSlice({
 
       // Update the order of all siblings
       siblings.forEach((sibling, idx) => {
-        state.components[sibling.id] = {
-          ...state.components[sibling.id],
-          order: idx,
-        };
+        if (sibling.id) {
+          state.components[sibling.id] = {
+            ...state.components[sibling.id],
+            order: idx,
+          };
+        }
       });
 
       // If the component moved from another parent, reorder the old siblings
@@ -163,10 +199,12 @@ const builderSlice = createSlice({
           .sort((a, b) => a.order - b.order);
 
         oldSiblings.forEach((sibling, idx) => {
-          state.components[sibling.id] = {
-            ...state.components[sibling.id],
-            order: idx,
-          };
+          if (sibling.id) {
+            state.components[sibling.id] = {
+              ...state.components[sibling.id],
+              order: idx,
+            };
+          }
         });
       }
 
@@ -256,13 +294,13 @@ const builderSlice = createSlice({
       const previous = state.history.past[state.history.past.length - 1];
 
       // Save current state to future
-      state.history.future = [state.components, ...state.history.future];
+      state.history.future = [{ ...state.components }, ...state.history.future];
       if (state.history.future.length > state.history.maxHistoryItems) {
         state.history.future.pop();
       }
 
       // Restore the previous state
-      state.components = previous;
+      state.components = { ...previous };
 
       // Remove the used state from the past
       state.history.past = state.history.past.slice(0, -1);
@@ -277,13 +315,13 @@ const builderSlice = createSlice({
       const next = state.history.future[0];
 
       // Save current state to past
-      state.history.past = [...state.history.past, state.components];
+      state.history.past = [...state.history.past, { ...state.components }];
       if (state.history.past.length > state.history.maxHistoryItems) {
         state.history.past.shift();
       }
 
       // Restore the next state
-      state.components = next;
+      state.components = { ...next };
 
       // Remove the used state from the future
       state.history.future = state.history.future.slice(1);
@@ -370,12 +408,12 @@ const builderSlice = createSlice({
       state.activePanel = action.payload;
     },
 
-    // DOM references
-    updateComponentDom: (
+    // DOM references - Fixed the property name
+    updateComponentDomId: (
       state,
-      action: PayloadAction<{ id: string; element: HTMLElement | null }>
+      action: PayloadAction<{ id: string; domId: DomRefID | null }>
     ) => {
-      state.domRefs[action.payload.id] = action.payload.element;
+      state.domRefIds[action.payload.id] = action.payload.domId;
     },
 
     // Error handling
@@ -394,28 +432,10 @@ const builderSlice = createSlice({
     },
 
     resetBuilder: (state) => {
-      return { ...initialState, canvasConfig: state.canvasConfig };
+      return { ...initialState, canvasConfig: { ...state.canvasConfig } };
     },
   },
 });
-
-// Helper function to save to history
-function saveToHistory(state: BuilderState) {
-  state.history.past = [...state.history.past, state.components];
-  state.history.future = [];
-
-  // Limit history size
-  if (state.history.past.length > state.history.maxHistoryItems) {
-    state.history.past.shift();
-  }
-}
-
-// Helper function to generate component ID
-function generateComponentId(type: ComponentType): string {
-  const typePrefix = type.toLowerCase();
-  const randomId = Math.random().toString(36).substring(2, 10);
-  return `${typePrefix}-${randomId}`;
-}
 
 export const {
   addComponent,
@@ -439,7 +459,7 @@ export const {
   endResize,
   setUnsavedChanges,
   setActivePanel,
-  updateComponentDom,
+  updateComponentDomId, // Renamed from updateComponentDom and fixed to match the reducer
   setError,
   loadProject,
   resetBuilder,

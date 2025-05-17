@@ -1,21 +1,59 @@
 import { Component } from "./components";
 
-// Project interface
+// Project status enum
+export enum ProjectStatus {
+  DRAFT = "DRAFT",
+  PUBLISHED = "PUBLISHED",
+  ARCHIVED = "ARCHIVED",
+}
+
+// Project base interface
 export interface Project {
   id: string;
   name: string;
   description?: string;
-  components: Component[];
-  settings: ProjectSettings;
-  meta: ProjectMeta;
-  publishStatus: PublishStatus;
+  status: ProjectStatus;
   thumbnail?: string;
-  collaborators?: ProjectCollaborator[];
+  pages?: ProjectPage[];
+  settings: ProjectSettings;
+  userId: string;
+  teamId?: string;
+  tags?: string[];
+  isPublished: boolean;
+  publishedAt?: string;
+  archivedAt?: string;
   createdAt: string;
   updatedAt: string;
+  components: ProjectComponent[];
+  meta?: ProjectMeta;
   isTemplate?: boolean;
   templateId?: string;
-  version: string;
+  version?: string;
+  lastEdited?: string;
+}
+
+// Project page interface
+export interface ProjectPage {
+  id: string;
+  name: string;
+  slug: string;
+  isHome: boolean;
+  components: ProjectComponent[];
+  metadata?: {
+    title?: string;
+    description?: string;
+    keywords?: string[];
+  };
+}
+
+// Project component interface
+export interface ProjectComponent {
+  id: string;
+  type: string;
+  props: Record<string, any>;
+  children?: ProjectComponent[];
+  styles?: Record<string, any>;
+  parentId?: string;
 }
 
 // Project metadata
@@ -169,7 +207,7 @@ export interface ProjectTemplate {
   description?: string;
   category: string;
   thumbnail: string;
-  project: Omit<Project, "id" | "createdAt" | "updatedAt" | "publishStatus">;
+  project: Omit<Project, "id" | "createdAt" | "updatedAt" | "status">;
   tags?: string[];
 }
 
@@ -247,6 +285,10 @@ export interface ProjectStats {
   visitCount?: number;
   collaboratorCount: number;
   versionCount: number;
+  views?: number;
+  visits?: number;
+  conversions?: number;
+  bounceRate?: number;
 }
 
 // Project version
@@ -258,4 +300,52 @@ export interface ProjectVersion {
   createdBy: string;
   comment?: string;
   snapshot: any; // Project data snapshot
+}
+
+// Response types
+export interface ProjectServiceListResponse {
+  projects: Project[];
+  totalCount: number;
+}
+
+// Request types
+export interface CreateProjectRequest {
+  name: string;
+  description?: string;
+  tags?: string[];
+  status?: ProjectStatus;
+  thumbnail?: string;
+  teamId?: string;
+  settings?: ProjectSettings;
+  templateId?: string;
+}
+
+export interface UpdateProjectRequest {
+  name?: string;
+  description?: string;
+  status?: ProjectStatus;
+  tags?: string[];
+  thumbnail?: string;
+  teamId?: string;
+  settings?: ProjectSettings;
+  isPublished?: boolean;
+  publishedAt?: string;
+  archivedAt?: string;
+}
+
+// Project filters
+export interface ProjectFilters {
+  searchTerm: string;
+  status: ProjectStatus[];
+  tags: string[];
+  dateRange: {
+    startDate: Date | null;
+    endDate: Date | null;
+  } | null;
+}
+
+// Sort order
+export interface SortOrder {
+  field: "name" | "createdAt" | "updatedAt";
+  direction: "asc" | "desc";
 }

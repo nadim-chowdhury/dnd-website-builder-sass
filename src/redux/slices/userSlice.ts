@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import * as authService from "@/services/auth";
-import * as usersService from "@/services/users";
+import { usersService } from "@/services/users";
 import {
   User,
   UserSettings,
@@ -117,10 +117,11 @@ export const verifyAuth = createAsyncThunk(
 
 export const fetchUserProfile = createAsyncThunk(
   "user/fetchUserProfile",
-  async (userId: string, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const profile = await usersService.getUserProfile(userId);
-      return profile;
+      // Using getCurrentUser which returns the full User object that includes profile info
+      const user = await usersService.getCurrentUser();
+      return user;
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to fetch user profile"
@@ -131,9 +132,11 @@ export const fetchUserProfile = createAsyncThunk(
 
 export const fetchUserSettings = createAsyncThunk(
   "user/fetchUserSettings",
-  async (userId: string, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const settings = await usersService.getUserSettings(userId);
+      // We'll use updateSettings with empty object to get current settings
+      // or alternatively implement a dedicated method in your API
+      const settings = await usersService.updateSettings({});
       return settings;
     } catch (error) {
       return rejectWithValue(
@@ -145,9 +148,9 @@ export const fetchUserSettings = createAsyncThunk(
 
 export const fetchUserSubscription = createAsyncThunk(
   "user/fetchUserSubscription",
-  async (userId: string, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const subscription = await usersService.getUserSubscription(userId);
+      const subscription = await usersService.getSubscriptionInfo();
       return subscription;
     } catch (error) {
       return rejectWithValue(
@@ -161,19 +164,10 @@ export const fetchUserSubscription = createAsyncThunk(
 
 export const updateUserProfile = createAsyncThunk(
   "user/updateUserProfile",
-  async (
-    {
-      userId,
-      profileData,
-    }: { userId: string; profileData: Partial<UserProfile> },
-    { rejectWithValue }
-  ) => {
+  async (profileData: Partial<UserProfile>, { rejectWithValue }) => {
     try {
-      const updatedProfile = await usersService.updateUserProfile(
-        userId,
-        profileData
-      );
-      return updatedProfile;
+      const updatedUser = await usersService.updateProfile(profileData);
+      return updatedUser;
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to update user profile"
@@ -184,18 +178,9 @@ export const updateUserProfile = createAsyncThunk(
 
 export const updateUserSettings = createAsyncThunk(
   "user/updateUserSettings",
-  async (
-    {
-      userId,
-      settingsData,
-    }: { userId: string; settingsData: Partial<UserSettings> },
-    { rejectWithValue }
-  ) => {
+  async (settingsData: Partial<UserSettings>, { rejectWithValue }) => {
     try {
-      const updatedSettings = await usersService.updateUserSettings(
-        userId,
-        settingsData
-      );
+      const updatedSettings = await usersService.updateSettings(settingsData);
       return updatedSettings;
     } catch (error) {
       return rejectWithValue(
@@ -325,7 +310,9 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.profile = action.payload;
+        state.user = action.payload;
+        // Extract profile from user object if needed
+        // state.profile = action.payload.profile;
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.isLoading = false;
@@ -356,7 +343,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserSubscription.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.subscription = action.payload;
+        state.subscription = action.payload as unknown as UserSubscription;
       })
       .addCase(fetchUserSubscription.rejected, (state, action) => {
         state.isLoading = false;
@@ -371,7 +358,9 @@ const userSlice = createSlice({
       })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.profile = action.payload;
+        state.user = action.payload;
+        // Extract profile from user if needed
+        // state.profile = action.payload.profile;
       })
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.isLoading = false;

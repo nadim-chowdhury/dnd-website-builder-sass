@@ -234,3 +234,42 @@ export interface ComponentRendererProps {
   isHovered?: boolean;
   onSelect?: (id: string) => void;
 }
+
+// Editor mode options
+export enum EditorMode {
+  EDIT = "edit",
+  PREVIEW = "preview",
+  CODE = "code",
+}
+
+// Breakpoint types for responsive design
+export enum BreakpointType {
+  MOBILE = "mobile",
+  TABLET = "tablet",
+  DESKTOP = "desktop",
+  LARGE_DESKTOP = "largeDesktop",
+}
+
+// State for drag and drop operations
+export interface DragState {
+  isDragging: boolean;
+  draggedComponentId: string | null;
+  draggedComponentType: ComponentType | null;
+  dropTargetId: string | null;
+  position: { x: number; y: number };
+  offset: { x: number; y: number };
+  resizing: {
+    componentId: string;
+    handle:
+      | "top"
+      | "right"
+      | "bottom"
+      | "left"
+      | "topLeft"
+      | "topRight"
+      | "bottomRight"
+      | "bottomLeft";
+    initialSize: { width: number; height: number };
+    initialPosition: { x: number; y: number };
+  } | null;
+}

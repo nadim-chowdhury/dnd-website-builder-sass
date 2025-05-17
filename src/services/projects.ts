@@ -32,6 +32,8 @@ interface UpdateProjectRequest {
   description?: string;
   status?: ProjectStatus;
   isPublished?: boolean;
+  publishedAt?: string;
+  archivedAt?: string;
 }
 
 /**

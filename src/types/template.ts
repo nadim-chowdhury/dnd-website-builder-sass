@@ -63,7 +63,7 @@ export interface TemplateSummary {
 
 // Template response (for listings with pagination)
 export interface TemplateResponse {
-  templates: TemplateSummary[];
+  templates: Template[];
   total: number;
   page: number;
   pageSize: number;
@@ -167,4 +167,14 @@ export interface TemplateReview {
   updatedAt: string;
   helpful: number;
   unhelpful: number;
+}
+
+// src/types/template.ts
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  categoryId: string;
+  thumbnailUrl: string;
+  content: any; // Replace with a more specific type based on your template structure
 }
