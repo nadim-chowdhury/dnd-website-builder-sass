@@ -3,8 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   selectCanRedo,
   selectCanUndo,
-  selectHistoryIndex,
-  selectHistoryLength,
+  selectEditorHistory,
 } from "../redux/selectors/builder-selectors";
 import {
   undo,
@@ -24,8 +23,13 @@ export const useUndoRedo = () => {
   // Get undo/redo state from Redux
   const canUndo = useSelector(selectCanUndo);
   const canRedo = useSelector(selectCanRedo);
-  const historyIndex = useSelector(selectHistoryIndex);
-  const historyLength = useSelector(selectHistoryLength);
+  const editorHistory = useSelector(selectEditorHistory);
+
+  // Derive history index and length from the history object
+  const historyIndex = editorHistory ? editorHistory.past.length : 0;
+  const historyLength = editorHistory
+    ? editorHistory.past.length + 1 + editorHistory.future.length
+    : 1;
 
   /**
    * Perform undo operation

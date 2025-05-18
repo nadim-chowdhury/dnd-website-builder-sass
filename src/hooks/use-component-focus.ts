@@ -1,26 +1,30 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  selectFocusedComponentId,
-  selectSelectedComponents,
-} from "../redux/selectors/builder-selectors";
-import {
-  setFocusedComponent,
-  clearFocusedComponent,
-  addSelectedComponent,
-  removeSelectedComponent,
-  clearSelectedComponents,
-} from "../redux/slices/builderSlice";
+import { selectSelectedComponentId } from "../redux/selectors/builder-selectors";
 import { useEditorState } from "./use-editor-state";
+import { selectComponent } from "../redux/slices/builderSlice";
 
 /**
  * Custom hook to manage component focus and selection in the editor
  */
 export const useComponentFocus = () => {
   const dispatch = useDispatch();
-  const focusedComponentId = useSelector(selectFocusedComponentId);
-  const selectedComponents = useSelector(selectSelectedComponents);
+  const selectedComponentId = useSelector(selectSelectedComponentId);
+  const [selectedComponents, setSelectedComponents] = useState<string[]>([]);
   const { isEditing } = useEditorState();
+
+  // Update the selectedComponents array when the selectedComponentId changes
+  useEffect(() => {
+    if (
+      selectedComponentId &&
+      !selectedComponents.includes(selectedComponentId)
+    ) {
+      setSelectedComponents([selectedComponentId]);
+    } else if (!selectedComponentId && selectedComponents.length > 0) {
+      // Clear selected components when selectedComponentId becomes null
+      setSelectedComponents([]);
+    }
+  }, [selectedComponentId, selectedComponents]);
 
   /**
    * Sets focus to a specific component
@@ -31,19 +35,21 @@ export const useComponentFocus = () => {
     (componentId: string, multiSelect: boolean = false) => {
       if (!isEditing) return;
 
-      dispatch(setFocusedComponent(componentId));
+      // Use the imported action creator instead of raw action object
+      dispatch(selectComponent(componentId));
 
       if (multiSelect) {
         // Add to selection if not already selected
         if (!selectedComponents.includes(componentId)) {
-          dispatch(addSelectedComponent(componentId));
+          setSelectedComponents([...selectedComponents, componentId]);
         } else {
-          dispatch(removeSelectedComponent(componentId));
+          setSelectedComponents(
+            selectedComponents.filter((id) => id !== componentId)
+          );
         }
       } else {
         // Replace selection with just this component
-        dispatch(clearSelectedComponents());
-        dispatch(addSelectedComponent(componentId));
+        setSelectedComponents([componentId]);
       }
     },
     [dispatch, selectedComponents, isEditing]
@@ -53,8 +59,8 @@ export const useComponentFocus = () => {
    * Clears the current focus and selection
    */
   const clearFocus = useCallback(() => {
-    dispatch(clearFocusedComponent());
-    dispatch(clearSelectedComponents());
+    dispatch(selectComponent(null));
+    setSelectedComponents([]);
   }, [dispatch]);
 
   /**
@@ -66,13 +72,25 @@ export const useComponentFocus = () => {
       if (!isEditing) return;
 
       if (selectedComponents.includes(componentId)) {
-        dispatch(removeSelectedComponent(componentId));
+        const updatedSelection = selectedComponents.filter(
+          (id) => id !== componentId
+        );
+        setSelectedComponents(updatedSelection);
+
+        // If we're removing the currently focused component, either focus another one or clear focus
+        if (componentId === selectedComponentId) {
+          if (updatedSelection.length > 0) {
+            dispatch(selectComponent(updatedSelection[0]));
+          } else {
+            dispatch(selectComponent(null));
+          }
+        }
       } else {
-        dispatch(addSelectedComponent(componentId));
-        dispatch(setFocusedComponent(componentId));
+        setSelectedComponents([...selectedComponents, componentId]);
+        dispatch(selectComponent(componentId));
       }
     },
-    [dispatch, selectedComponents, isEditing]
+    [dispatch, selectedComponents, selectedComponentId, isEditing]
   );
 
   /**
@@ -83,14 +101,13 @@ export const useComponentFocus = () => {
     (componentIds: string[]) => {
       if (!isEditing) return;
 
-      dispatch(clearSelectedComponents());
-      componentIds.forEach((id) => {
-        dispatch(addSelectedComponent(id));
-      });
+      setSelectedComponents(componentIds);
 
       // Focus the last component in the selection
       if (componentIds.length > 0) {
-        dispatch(setFocusedComponent(componentIds[componentIds.length - 1]));
+        dispatch(selectComponent(componentIds[componentIds.length - 1]));
+      } else {
+        dispatch(selectComponent(null));
       }
     },
     [dispatch, isEditing]
@@ -109,10 +126,13 @@ export const useComponentFocus = () => {
       // Handle deletion of selected components
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
-        selectedComponents.length > 0
+        selectedComponents.length > 0 &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA"
       ) {
         // This would be handled by a separate hook or action
         // that listens for selected components
+        // Added check to prevent deletion when typing in form fields
       }
     };
 
@@ -123,7 +143,7 @@ export const useComponentFocus = () => {
   }, [clearFocus, selectedComponents, isEditing]);
 
   return {
-    focusedComponentId,
+    focusedComponentId: selectedComponentId,
     selectedComponents,
     setFocus,
     clearFocus,

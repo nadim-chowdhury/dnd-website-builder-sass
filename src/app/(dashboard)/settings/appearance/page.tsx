@@ -1,28 +1,17 @@
 "use client";
 
-import { z } from "zod";
-import { useState, useEffect } from "react";
-import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import {
@@ -33,13 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // Define schemas with specific types
 const appearanceFormSchema = z.object({
-  theme: z.enum(["light", "dark", "system"], {
-    required_error: "Please select a theme.",
-  }),
   fontSize: z.enum(["sm", "md", "lg", "xl"], {
     required_error: "Please select a font size.",
   }),
@@ -71,17 +58,13 @@ type EditorFormValues = z.infer<typeof editorFormSchema>;
 
 export default function AppearanceSettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<"light" | "dark" | "system">(
-    "system"
-  );
 
   // Form for appearance settings with explicit type
   const appearanceForm = useForm<AppearanceFormValues>({
     resolver: zodResolver(appearanceFormSchema),
     defaultValues: {
-      theme: "system",
       fontSize: "md",
-      colorScheme: "default",
+      colorScheme: "blue",
       borderRadius: "medium",
       animation: true,
       compactMode: false,
@@ -102,30 +85,6 @@ export default function AppearanceSettingsPage() {
     },
   });
 
-  // Effect to detect and set system theme preference
-  useEffect(() => {
-    // Check for system preference
-    if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      setCurrentTheme("dark");
-    } else {
-      setCurrentTheme("light");
-    }
-
-    // Override with user preference if set in localStorage
-    const savedTheme = localStorage.getItem("theme") as
-      | "light"
-      | "dark"
-      | "system"
-      | null;
-    if (savedTheme) {
-      setCurrentTheme(savedTheme);
-      appearanceForm.setValue("theme", savedTheme);
-    }
-  }, [appearanceForm]);
-
   async function onAppearanceSubmit(data: AppearanceFormValues) {
     setIsLoading(true);
 
@@ -133,29 +92,10 @@ export default function AppearanceSettingsPage() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      // Save theme preference to localStorage
-      localStorage.setItem("theme", data.theme);
-
-      // Apply theme changes
-      if (data.theme === "system") {
-        // Use system preference
-        if (
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches
-        ) {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-      } else if (data.theme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-
-      // Success message would go here (toast removed)
+      // Save preferences to localStorage
+      localStorage.setItem("appearancePreferences", JSON.stringify(data));
     } catch (error) {
-      // Error message would go here (toast removed)
+      console.error("Failed to save settings", error);
     } finally {
       setIsLoading(false);
     }
@@ -170,26 +110,19 @@ export default function AppearanceSettingsPage() {
 
       // Save editor preferences to localStorage
       localStorage.setItem("editorPreferences", JSON.stringify(data));
-
-      // Success message would go here (toast removed)
     } catch (error) {
-      // Error message would go here (toast removed)
+      console.error("Failed to save editor settings", error);
     } finally {
       setIsLoading(false);
     }
   }
 
   function resetToDefaults() {
-    if (
-      confirm(
-        "Are you sure you want to reset all appearance settings to default?"
-      )
-    ) {
+    if (confirm("Are you sure you want to reset all settings to default?")) {
       // Reset appearance form
       appearanceForm.reset({
-        theme: "system",
         fontSize: "md",
-        colorScheme: "default",
+        colorScheme: "blue",
         borderRadius: "medium",
         animation: true,
         compactMode: false,
@@ -207,520 +140,425 @@ export default function AppearanceSettingsPage() {
       });
 
       // Clear localStorage settings
-      localStorage.removeItem("theme");
+      localStorage.removeItem("appearancePreferences");
       localStorage.removeItem("editorPreferences");
-
-      // Success message would go here (toast removed)
     }
   }
 
+  // Color scheme map for visual feedback
+  const colorSchemeClasses = {
+    default: "bg-gray-100",
+    blue: "bg-blue-50",
+    green: "bg-green-50",
+    purple: "bg-purple-50",
+    orange: "bg-orange-50",
+  };
+
+  // Get current color scheme
+  const currentColorScheme = appearanceForm.watch("colorScheme");
+
   return (
-    <div className="container max-w-4xl py-10">
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Appearance Settings
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Customize the appearance and behavior of the application and editor.
-          </p>
-        </div>
+    <div
+      className={`min-h-screen px-4 py-12 transition-colors ${colorSchemeClasses[currentColorScheme]}`}
+    >
+      <div className="container max-w-3xl mx-auto">
+        <div className="space-y-8">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">Settings</h1>
+            <p className="text-gray-500 mt-2">Customize your experience</p>
+          </div>
 
-        <Separator />
+          <Tabs defaultValue="general" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsTrigger value="general" className="py-2">
+                Interface
+              </TabsTrigger>
+              <TabsTrigger value="editor" className="py-2">
+                Editor
+              </TabsTrigger>
+              <TabsTrigger value="accessibility" className="py-2">
+                Accessibility
+              </TabsTrigger>
+            </TabsList>
 
-        <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full md:w-auto grid-cols-2 md:grid-cols-2 mb-4">
-            <TabsTrigger value="general">General Appearance</TabsTrigger>
-            <TabsTrigger value="editor">Editor Preferences</TabsTrigger>
-          </TabsList>
+            <TabsContent value="general">
+              <Card>
+                <CardHeader className="bg-blue-500 text-white">
+                  <CardTitle>Interface Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <Form {...appearanceForm}>
+                    <form
+                      onSubmit={appearanceForm.handleSubmit(onAppearanceSubmit)}
+                      className="space-y-6"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={appearanceForm.control}
+                          name="fontSize"
+                          render={({ field }) => (
+                            <FormItem className="bg-white p-4 rounded-lg">
+                              <FormLabel>Font Size</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select font size" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="sm">Small</SelectItem>
+                                  <SelectItem value="md">Medium</SelectItem>
+                                  <SelectItem value="lg">Large</SelectItem>
+                                  <SelectItem value="xl">
+                                    Extra Large
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
 
-          <TabsContent value="general">
-            <Card>
-              <CardHeader>
-                <CardTitle>Theme Settings</CardTitle>
-                <CardDescription>
-                  Customize the look and feel of the application interface.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...appearanceForm}>
-                  <form
-                    onSubmit={appearanceForm.handleSubmit(onAppearanceSubmit)}
-                    className="space-y-6"
-                  >
-                    <FormField
-                      control={appearanceForm.control}
-                      name="theme"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel>Theme</FormLabel>
-                          <FormDescription>
-                            Select your preferred theme for the application.
-                          </FormDescription>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex flex-col space-y-1 sm:flex-row sm:space-y-0 sm:space-x-4"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="light" id="light" />
-                                <Label htmlFor="light">Light</Label>
+                        <FormField
+                          control={appearanceForm.control}
+                          name="colorScheme"
+                          render={({ field }) => (
+                            <FormItem className="bg-white p-4 rounded-lg">
+                              <FormLabel>Color Scheme</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select color scheme" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="default">
+                                    Default
+                                  </SelectItem>
+                                  <SelectItem value="blue">Blue</SelectItem>
+                                  <SelectItem value="green">Green</SelectItem>
+                                  <SelectItem value="purple">Purple</SelectItem>
+                                  <SelectItem value="orange">Orange</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={appearanceForm.control}
+                          name="borderRadius"
+                          render={({ field }) => (
+                            <FormItem className="bg-white p-4 rounded-lg">
+                              <FormLabel>Border Radius</FormLabel>
+                              <div className="grid grid-cols-4 gap-2 mt-2">
+                                {["none", "small", "medium", "large"].map(
+                                  (radius) => (
+                                    <div
+                                      key={radius}
+                                      className={`
+                                      cursor-pointer p-2 text-center transition-all
+                                      ${
+                                        field.value === radius
+                                          ? "bg-blue-500 text-white"
+                                          : "bg-gray-100"
+                                      }
+                                      ${radius === "none" ? "rounded-none" : ""}
+                                      ${radius === "small" ? "rounded" : ""}
+                                      ${radius === "medium" ? "rounded-lg" : ""}
+                                      ${radius === "large" ? "rounded-2xl" : ""}
+                                    `}
+                                      onClick={() => field.onChange(radius)}
+                                    >
+                                      {radius.charAt(0).toUpperCase() +
+                                        radius.slice(1)}
+                                    </div>
+                                  )
+                                )}
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="dark" id="dark" />
-                                <Label htmlFor="dark">Dark</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="system" id="system" />
-                                <Label htmlFor="system">System</Label>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                          <div className="text-sm text-muted-foreground">
-                            {field.value === "system" && (
-                              <span>
-                                Using{" "}
-                                {currentTheme === "dark" ? "dark" : "light"}{" "}
-                                mode based on system preference
-                              </span>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between bg-white p-4 rounded-lg">
+                          <FormField
+                            control={appearanceForm.control}
+                            name="animation"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center justify-between w-full">
+                                <FormLabel>Animations</FormLabel>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
                             )}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                          />
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={appearanceForm.control}
-                        name="fontSize"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Font Size</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                        <div className="flex items-center justify-between bg-white p-4 rounded-lg">
+                          <FormField
+                            control={appearanceForm.control}
+                            name="compactMode"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center justify-between w-full">
+                                <FormLabel>Compact Mode</FormLabel>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between pt-6">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={resetToDefaults}
+                        >
+                          Reset
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={isLoading}
+                          className="bg-blue-500 text-white"
+                        >
+                          {isLoading ? "Saving..." : "Save"}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="editor">
+              <Card>
+                <CardHeader className="bg-purple-500 text-white">
+                  <CardTitle>Editor Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <Form {...editorForm}>
+                    <form
+                      onSubmit={editorForm.handleSubmit(onEditorSubmit)}
+                      className="space-y-6"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={editorForm.control}
+                          name="autosave"
+                          render={({ field }) => (
+                            <FormItem className="bg-white p-4 rounded-lg flex items-center justify-between">
+                              <FormLabel>Autosave</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select font size" />
-                                </SelectTrigger>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
                               </FormControl>
-                              <SelectContent>
-                                <SelectItem value="sm">Small</SelectItem>
-                                <SelectItem value="md">Medium</SelectItem>
-                                <SelectItem value="lg">Large</SelectItem>
-                                <SelectItem value="xl">Extra Large</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              Adjust the text size across the application.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={appearanceForm.control}
-                        name="colorScheme"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Color Scheme</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                        <FormField
+                          control={editorForm.control}
+                          name="gridSnapping"
+                          render={({ field }) => (
+                            <FormItem className="bg-white p-4 rounded-lg flex items-center justify-between">
+                              <FormLabel>Grid Snapping</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select color scheme" />
-                                </SelectTrigger>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
                               </FormControl>
-                              <SelectContent>
-                                <SelectItem value="default">Default</SelectItem>
-                                <SelectItem value="blue">Blue</SelectItem>
-                                <SelectItem value="green">Green</SelectItem>
-                                <SelectItem value="purple">Purple</SelectItem>
-                                <SelectItem value="orange">Orange</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              Choose the accent color for the interface.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={appearanceForm.control}
-                        name="borderRadius"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Border Radius</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                        <FormField
+                          control={editorForm.control}
+                          name="showGuides"
+                          render={({ field }) => (
+                            <FormItem className="bg-white p-4 rounded-lg flex items-center justify-between">
+                              <FormLabel>Show Guides</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select border style" />
-                                </SelectTrigger>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
                               </FormControl>
-                              <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                <SelectItem value="small">Small</SelectItem>
-                                <SelectItem value="medium">Medium</SelectItem>
-                                <SelectItem value="large">Large</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              Control the roundness of UI elements.
-                            </FormDescription>
-                            <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={editorForm.control}
+                          name="previewOnSave"
+                          render={({ field }) => (
+                            <FormItem className="bg-white p-4 rounded-lg flex items-center justify-between">
+                              <FormLabel>Preview After Save</FormLabel>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={editorForm.control}
+                        name="defaultView"
+                        render={({ field }) => (
+                          <FormItem className="mt-6">
+                            <FormLabel>Default View</FormLabel>
+                            <div className="grid grid-cols-3 gap-4 mt-2">
+                              {["desktop", "tablet", "mobile"].map((view) => (
+                                <div
+                                  key={view}
+                                  className={`
+                                    cursor-pointer p-4 text-center flex flex-col items-center gap-2 
+                                    ${
+                                      field.value === view
+                                        ? "bg-purple-500 text-white"
+                                        : "bg-white"
+                                    }
+                                    rounded-lg transition-all
+                                  `}
+                                  onClick={() => field.onChange(view)}
+                                >
+                                  <span className="text-xl">
+                                    {view === "desktop"
+                                      ? "🖥️"
+                                      : view === "tablet"
+                                        ? "📱"
+                                        : "📱"}
+                                  </span>
+                                  <span className="capitalize">{view}</span>
+                                </div>
+                              ))}
+                            </div>
                           </FormItem>
                         )}
                       />
+
+                      <div className="bg-white p-4 rounded-lg mt-6">
+                        <h3 className="font-medium mb-4">
+                          Component Visualization
+                        </h3>
+                        <div className="space-y-4">
+                          <FormField
+                            control={editorForm.control}
+                            name="componentLabels"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center justify-between">
+                                <FormLabel>Component Labels</FormLabel>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={editorForm.control}
+                            name="componentOutlines"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center justify-between">
+                                <FormLabel>Component Outlines</FormLabel>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-center pt-6">
+                        <Button
+                          type="submit"
+                          disabled={isLoading}
+                          className="bg-purple-500 text-white"
+                        >
+                          {isLoading ? "Saving..." : "Save Editor Settings"}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="accessibility">
+              <Card>
+                <CardHeader className="bg-pink-500 text-white">
+                  <CardTitle>Accessibility</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="bg-white p-4 rounded-lg flex items-center justify-between">
+                      <div>
+                        <Label>Reduce Motion</Label>
+                      </div>
+                      <Switch />
                     </div>
 
-                    <div className="space-y-4">
-                      <FormField
-                        control={appearanceForm.control}
-                        name="animation"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Interface Animations
-                              </FormLabel>
-                              <FormDescription>
-                                Enable or disable UI animations and transitions.
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={appearanceForm.control}
-                        name="compactMode"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Compact Mode
-                              </FormLabel>
-                              <FormDescription>
-                                Reduce spacing to fit more content on screen.
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                    <div className="bg-white p-4 rounded-lg flex items-center justify-between">
+                      <div>
+                        <Label>High Contrast</Label>
+                      </div>
+                      <Switch />
                     </div>
 
-                    <div className="flex justify-between">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={resetToDefaults}
-                      >
-                        Reset to Defaults
-                      </Button>
-                      <Button type="submit" disabled={isLoading}>
-                        {isLoading ? "Saving..." : "Save Changes"}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="editor">
-            <Card>
-              <CardHeader>
-                <CardTitle>Editor Preferences</CardTitle>
-                <CardDescription>
-                  Customize the behavior and appearance of the website builder
-                  editor.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...editorForm}>
-                  <form
-                    onSubmit={editorForm.handleSubmit(onEditorSubmit)}
-                    className="space-y-6"
-                  >
-                    <div className="space-y-4">
-                      <FormField
-                        control={editorForm.control}
-                        name="autosave"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Autosave
-                              </FormLabel>
-                              <FormDescription>
-                                Automatically save changes while editing.
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editorForm.control}
-                        name="gridSnapping"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Grid Snapping
-                              </FormLabel>
-                              <FormDescription>
-                                Snap elements to grid for precise positioning.
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editorForm.control}
-                        name="showGuides"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Show Guides
-                              </FormLabel>
-                              <FormDescription>
-                                Show alignment guides when moving elements.
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editorForm.control}
-                        name="previewOnSave"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Preview After Save
-                              </FormLabel>
-                              <FormDescription>
-                                Show preview automatically after saving changes.
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                    <div className="bg-white p-4 rounded-lg flex items-center justify-between">
+                      <div>
+                        <Label>Screen Reader Optimization</Label>
+                      </div>
+                      <Switch defaultChecked />
                     </div>
 
-                    <FormField
-                      control={editorForm.control}
-                      name="defaultView"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Default View</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select default view" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="desktop">
-                                Desktop (1200px)
-                              </SelectItem>
-                              <SelectItem value="tablet">
-                                Tablet (768px)
-                              </SelectItem>
-                              <SelectItem value="mobile">
-                                Mobile (320px)
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Choose the default device view when opening the
-                            editor.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="space-y-4">
-                      <FormField
-                        control={editorForm.control}
-                        name="componentLabels"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Component Labels
-                              </FormLabel>
-                              <FormDescription>
-                                Show component type labels when hovering.
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editorForm.control}
-                        name="componentOutlines"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Component Outlines
-                              </FormLabel>
-                              <FormDescription>
-                                Show element boundaries in the editor.
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                    <div className="bg-white p-4 rounded-lg flex items-center justify-between">
+                      <div>
+                        <Label>Focus Indicators</Label>
+                      </div>
+                      <Switch defaultChecked />
                     </div>
+                  </div>
 
-                    <Button type="submit" disabled={isLoading}>
-                      {isLoading ? "Saving..." : "Save Editor Preferences"}
+                  <div className="flex justify-center mt-6">
+                    <Button className="bg-pink-500 text-white">
+                      Save Accessibility Settings
                     </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Accessibility</CardTitle>
-            <CardDescription>
-              Settings to improve accessibility and usability.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <Label className="text-base">Reduce Motion</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Minimize animations for users who prefer reduced motion.
-                  </p>
-                </div>
-                <Switch
-                  checked={false}
-                  onCheckedChange={() => {
-                    // Toast removed
-                  }}
-                />
-              </div>
-
-              <div className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <Label className="text-base">High Contrast Mode</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Increase contrast for better visibility.
-                  </p>
-                </div>
-                <Switch
-                  checked={false}
-                  onCheckedChange={() => {
-                    // Toast removed
-                  }}
-                />
-              </div>
-
-              <div className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <Label className="text-base">
-                    Screen Reader Optimization
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enhance the interface for screen reader compatibility.
-                  </p>
-                </div>
-                <Switch
-                  checked={true}
-                  onCheckedChange={() => {
-                    // Toast removed
-                  }}
-                />
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                // Toast removed
-              }}
-            >
-              Save Accessibility Settings
-            </Button>
-          </CardFooter>
-        </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

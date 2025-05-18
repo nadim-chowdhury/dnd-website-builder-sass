@@ -14,9 +14,13 @@ import {
   duplicateComponent,
 } from "../redux/slices/builderSlice";
 import type { Component, ComponentType } from "../types/components";
-import { generateComponentId } from "../utils/component";
+import {
+  createComponent,
+  canAcceptChildren as checkCanAcceptChildren,
+} from "../utils/component";
 import { useEditorState } from "./use-editor-state";
 import { useComponentFocus } from "./use-component-focus";
+import { RootState } from "../redux/store"; // Make sure to import the RootState type
 
 /**
  * Custom hook for managing components in the builder
@@ -28,21 +32,37 @@ export const useComponents = () => {
   const { isEditing } = useEditorState();
   const { setFocus } = useComponentFocus();
 
+  // Pre-select the selector functions to use in callbacks
+  const componentByIdSelector = useSelector(
+    (state: RootState) => (id: string) => selectComponentById(state, id)
+  );
+
+  const componentChildrenSelector = useSelector(
+    (state: RootState) => (parentId: string) =>
+      selectComponentChildren(state, parentId)
+  );
+
   /**
    * Get a component by its ID
    * @param id - The component ID
    */
-  const getComponent = useCallback((id: string) => {
-    return useSelector((state) => selectComponentById(state, id));
-  }, []);
+  const getComponent = useCallback(
+    (id: string) => {
+      return componentByIdSelector(id);
+    },
+    [componentByIdSelector]
+  );
 
   /**
    * Get children of a component
    * @param parentId - The parent component ID
    */
-  const getComponentChildren = useCallback((parentId: string) => {
-    return useSelector((state) => selectComponentChildren(state, parentId));
-  }, []);
+  const getComponentChildren = useCallback(
+    (parentId: string) => {
+      return componentChildrenSelector(parentId);
+    },
+    [componentChildrenSelector]
+  );
 
   /**
    * Add a new component to the builder
@@ -60,19 +80,16 @@ export const useComponents = () => {
     ) => {
       if (!isEditing) return null;
 
-      const id = generateComponentId(componentType);
-      const newComponent: Component = {
-        id,
-        type: componentType,
-        props: initialProps || {},
-        styles: {},
-        parentId: parentId || null,
-        children: [],
-      };
+      const newComponent = createComponent(
+        componentType,
+        parentId,
+        initialProps
+      );
 
-      dispatch(addComponent({ component: newComponent, index }));
-      setFocus(id);
-      return id;
+      // Ensure the component matches the expected structure in the reducer
+      dispatch(addComponent(newComponent));
+      setFocus(newComponent.id);
+      return newComponent.id;
     },
     [dispatch, setFocus, isEditing]
   );
@@ -89,7 +106,7 @@ export const useComponents = () => {
       dispatch(
         updateComponent({
           id,
-          updates: { props },
+          changes: { props }, // Changed from 'updates' to 'changes' to match the action type
         })
       );
     },
@@ -108,7 +125,7 @@ export const useComponents = () => {
       dispatch(
         updateComponent({
           id,
-          updates: { styles },
+          changes: { styles }, // Changed from 'updates' to 'changes' to match the action type
         })
       );
     },
@@ -136,7 +153,10 @@ export const useComponents = () => {
     (id: string) => {
       if (!isEditing) return;
 
-      const newId = dispatch(duplicateComponent(id));
+      // The duplicateComponent action returns an action object, not the new ID directly
+      const action = dispatch(duplicateComponent(id));
+      // Extract the new ID from the action's payload
+      const newId = action.payload;
       setFocus(newId);
       return newId;
     },
@@ -155,9 +175,9 @@ export const useComponents = () => {
 
       dispatch(
         moveComponent({
-          componentId: id,
-          newParentId,
-          index,
+          id, // Changed from componentId to id to match the action type
+          parentId: newParentId, // Changed from newParentId to parentId to match the action type
+          index: index || 0, // Ensure index is not undefined
         })
       );
     },
@@ -169,16 +189,7 @@ export const useComponents = () => {
    * @param componentType - The component type to check
    */
   const canAcceptChildren = useCallback((componentType: ComponentType) => {
-    // Container components that can accept children
-    const containerTypes: ComponentType[] = [
-      "section",
-      "container",
-      "grid",
-      "column",
-      "form",
-    ];
-
-    return containerTypes.includes(componentType);
+    return checkCanAcceptChildren(componentType);
   }, []);
 
   return {

@@ -1,84 +1,20 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { useState } from "react";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-// import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-
-const profileFormSchema = z.object({
-  username: z
-    .string()
-    .min(2, {
-      message: "Username must be at least 2 characters.",
-    })
-    .max(30, {
-      message: "Username must not be longer than 30 characters.",
-    }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  bio: z.string().max(160).optional(),
-  urls: z
-    .object({
-      website: z
-        .string()
-        .url({ message: "Please enter a valid URL." })
-        .optional()
-        .or(z.literal("")),
-      github: z
-        .string()
-        .url({ message: "Please enter a valid URL." })
-        .optional()
-        .or(z.literal("")),
-    })
-    .optional(),
-});
-
-const passwordFormSchema = z
-  .object({
-    currentPassword: z.string().min(8, {
-      message: "Password must be at least 8 characters.",
-    }),
-    newPassword: z.string().min(8, {
-      message: "Password must be at least 8 characters.",
-    }),
-    confirmPassword: z.string().min(8, {
-      message: "Password must be at least 8 characters.",
-    }),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
-type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+import Image from "next/image";
 
 export default function AccountSettingsPage() {
-  // const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState({
     email: true,
@@ -86,87 +22,83 @@ export default function AccountSettingsPage() {
     marketing: true,
   });
 
-  // Profile form with default values
-  const profileForm = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      username: "johndoe",
-      email: "john.doe@example.com",
-      bio: "Web developer and UI/UX enthusiast",
-      urls: {
-        website: "https://johndoe.com",
-        github: "https://github.com/johndoe",
-      },
-    },
-    mode: "onChange",
+  // Form state
+  const [profile, setProfile] = useState<any>({
+    username: "nadim-chowdhury",
+    email: "john.doe@example.com",
+    bio: "Web developer and UI/UX enthusiast",
+    website: "https://johndoe.com",
+    github: "https://github.com/johndoe",
   });
 
-  // Password form
-  const passwordForm = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordFormSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-    mode: "onChange",
+  const [password, setPassword] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
-  async function onProfileSubmit(data: ProfileFormValues) {
-    setIsLoading(true);
-
-    // Simulate API call
-    try {
-      // Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // toast({
-      //   title: "Profile updated",
-      //   description: "Your profile information has been updated successfully.",
-      // });
-    } catch (error) {
-      // toast({
-      //   title: "Error",
-      //   description: "Failed to update profile. Please try again.",
-      //   variant: "destructive",
-      // });
-    } finally {
-      setIsLoading(false);
+  // Handle profile form changes
+  const handleProfileChange = (e: any) => {
+    const { name, value } = e.target;
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      setProfile({
+        ...profile,
+        [parent]: {
+          ...profile[parent],
+          [child]: value,
+        },
+      });
+    } else {
+      setProfile({
+        ...profile,
+        [name]: value,
+      });
     }
-  }
+  };
 
-  async function onPasswordSubmit(data: PasswordFormValues) {
+  // Handle password form changes
+  const handlePasswordChange = (e: any) => {
+    const { name, value } = e.target;
+    setPassword({
+      ...password,
+      [name]: value,
+    });
+  };
+
+  // Submit handlers
+  const handleProfileSubmit = () => {
     setIsLoading(true);
 
     // Simulate API call
-    try {
-      // Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    setTimeout(() => {
+      setIsLoading(false);
+      alert("Profile updated successfully");
+    }, 1000);
+  };
 
-      // toast({
-      //   title: "Password updated",
-      //   description: "Your password has been changed successfully.",
-      // });
+  const handlePasswordSubmit = () => {
+    // Validate password match
+    if (password.newPassword !== password.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
 
-      // Reset form after successful submission
-      passwordForm.reset({
+    setIsLoading(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      alert("Password updated successfully");
+      setPassword({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
-    } catch (error) {
-      // toast({
-      //   title: "Error",
-      //   description:
-      //     "Failed to update password. Please check your current password and try again.",
-      //   variant: "destructive",
-      // });
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    }, 1000);
+  };
 
-  async function handleDeleteAccount() {
+  const handleDeleteAccount = () => {
     if (
       confirm(
         "Are you sure you want to delete your account? This action cannot be undone."
@@ -174,247 +106,212 @@ export default function AccountSettingsPage() {
     ) {
       setIsLoading(true);
 
-      try {
-        // Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // toast({
-        //   title: "Account deleted",
-        //   description: "Your account has been deleted successfully.",
-        // });
-
-        // Redirect to home page or login
-        // window.location.href = "/";
-      } catch (error) {
-        // toast({
-        //   title: "Error",
-        //   description: "Failed to delete account. Please try again.",
-        //   variant: "destructive",
-        // });
-      } finally {
+      // Simulate API call
+      setTimeout(() => {
         setIsLoading(false);
-      }
+        alert("Account deleted successfully");
+      }, 1000);
     }
-  }
+  };
+
+  const saveNotificationPreferences = () => {
+    // Simulate API call
+    setTimeout(() => {
+      alert("Notification preferences saved");
+    }, 500);
+  };
 
   return (
-    <div className="container max-w-4xl py-10">
-      <div className="space-y-6">
+    <div className="max-w-3xl mx-auto py-8 px-4">
+      <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Account Settings
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your account settings and preferences.
+          <h1 className="text-2xl font-medium">Account Settings</h1>
+          <p className="text-gray-500 mt-1">
+            Manage your account settings and preferences
           </p>
         </div>
 
-        <Separator />
-
         {/* Profile Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>
-              Update your profile information and how others see you on the
-              platform.
-            </CardDescription>
+        <Card className="shadow-sm border-gray-100">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-medium">Profile</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-4 mb-6">
-              <Avatar className="h-20 w-20">
-                <AvatarImage
-                  src="https://github.com/shadcn.png"
-                  alt="Profile picture"
+              <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                <Image
+                  src="https://avatars.githubusercontent.com/u/40499378?v=4"
+                  alt="Profile"
+                  width={64}
+                  height={64}
+                  className="object-cover"
                 />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
+              </div>
               <div>
-                <Button variant="outline" size="sm">
-                  Change avatar
+                <Button variant="outline" size="sm" className="h-8">
+                  Change photo
                 </Button>
-                <p className="text-sm text-muted-foreground mt-2">
-                  JPG, GIF or PNG. 1MB max.
-                </p>
               </div>
             </div>
-            <Form {...profileForm}>
-              <form
-                onSubmit={profileForm.handleSubmit(onProfileSubmit)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={profileForm.control}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Username
+                </label>
+                <Input
                   name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Username</FormLabel>
-                      <FormControl>
-                        <Input placeholder="username" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        This is your public display name.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  value={profile.username}
+                  onChange={handleProfileChange}
+                  placeholder="Username"
+                  className="h-10"
                 />
-                <FormField
-                  control={profileForm.control}
+                <p className="text-xs text-gray-500 mt-1">
+                  Your public display name
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <Input
                   name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="email@example.com" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        We&apos;ll never share your email with anyone else.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  value={profile.email}
+                  onChange={handleProfileChange}
+                  placeholder="email@example.com"
+                  className="h-10"
                 />
-                <FormField
-                  control={profileForm.control}
+                <p className="text-xs text-gray-500 mt-1">
+                  We&apos;ll never share your email
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Bio</label>
+                <Input
                   name="bio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bio</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Tell us about yourself"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Brief description for your profile. Max 160 characters.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  value={profile.bio}
+                  onChange={handleProfileChange}
+                  placeholder="Tell us about yourself"
+                  className="h-10"
                 />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={profileForm.control}
-                    name="urls.website"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Website</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="https://your-website.com"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={profileForm.control}
-                    name="urls.github"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>GitHub</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="https://github.com/username"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                <p className="text-xs text-gray-500 mt-1">Max 160 characters</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Website
+                  </label>
+                  <Input
+                    name="website"
+                    value={profile.website}
+                    onChange={handleProfileChange}
+                    placeholder="https://example.com"
+                    className="h-10"
                   />
                 </div>
-                <Button type="submit" disabled={isLoading}>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    GitHub
+                  </label>
+                  <Input
+                    name="github"
+                    value={profile.github}
+                    onChange={handleProfileChange}
+                    placeholder="https://github.com/username"
+                    className="h-10"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  onClick={handleProfileSubmit}
+                  disabled={isLoading}
+                  className="h-9 px-4"
+                >
                   {isLoading ? "Saving..." : "Save changes"}
                 </Button>
-              </form>
-            </Form>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Password Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Password</CardTitle>
-            <CardDescription>
-              Update your password to keep your account secure.
-            </CardDescription>
+        <Card className="shadow-sm border-gray-100">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-medium">Password</CardTitle>
           </CardHeader>
           <CardContent>
-            <Form {...passwordForm}>
-              <form
-                onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={passwordForm.control}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Current Password
+                </label>
+                <Input
+                  type="password"
                   name="currentPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Current Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  value={password.currentPassword}
+                  onChange={handlePasswordChange}
+                  className="h-10"
                 />
-                <FormField
-                  control={passwordForm.control}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  New Password
+                </label>
+                <Input
+                  type="password"
                   name="newPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>New Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Password must be at least 8 characters long.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  value={password.newPassword}
+                  onChange={handlePasswordChange}
+                  className="h-10"
                 />
-                <FormField
-                  control={passwordForm.control}
+                <p className="text-xs text-gray-500 mt-1">
+                  Minimum 8 characters
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Confirm New Password
+                </label>
+                <Input
+                  type="password"
                   name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm New Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  value={password.confirmPassword}
+                  onChange={handlePasswordChange}
+                  className="h-10"
                 />
-                <Button type="submit" disabled={isLoading}>
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  onClick={handlePasswordSubmit}
+                  disabled={isLoading}
+                  className="h-9 px-4"
+                >
                   {isLoading ? "Updating..." : "Update password"}
                 </Button>
-              </form>
-            </Form>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Notification Preferences */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
-            <CardDescription>
-              Manage how you receive notifications and updates.
-            </CardDescription>
+        <Card className="shadow-sm border-gray-100">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-medium">Notifications</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <h3 className="font-medium">Email Notifications</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Receive email notifications about your account activity.
+                <div>
+                  <h3 className="text-sm font-medium">Email Notifications</h3>
+                  <p className="text-xs text-gray-500">
+                    Receive email updates about your account
                   </p>
                 </div>
                 <Switch
@@ -427,12 +324,14 @@ export default function AccountSettingsPage() {
                   }
                 />
               </div>
-              <Separator />
+
+              <Separator className="my-2" />
+
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <h3 className="font-medium">Push Notifications</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Receive push notifications in your browser.
+                <div>
+                  <h3 className="text-sm font-medium">Push Notifications</h3>
+                  <p className="text-xs text-gray-500">
+                    Receive browser notifications
                   </p>
                 </div>
                 <Switch
@@ -445,13 +344,14 @@ export default function AccountSettingsPage() {
                   }
                 />
               </div>
-              <Separator />
+
+              <Separator className="my-2" />
+
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <h3 className="font-medium">Marketing Emails</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Receive updates about new features, templates, and
-                    promotions.
+                <div>
+                  <h3 className="text-sm font-medium">Marketing Emails</h3>
+                  <p className="text-xs text-gray-500">
+                    Receive updates about new features and promotions
                   </p>
                 </div>
                 <Switch
@@ -466,15 +366,11 @@ export default function AccountSettingsPage() {
               </div>
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="pt-0">
             <Button
               variant="outline"
-              // onClick={() => {
-              //   toast({
-              //     title: "Notification preferences updated",
-              //     description: "Your notification preferences have been saved.",
-              //   });
-              // }}
+              onClick={saveNotificationPreferences}
+              className="h-9"
             >
               Save preferences
             </Button>
@@ -482,12 +378,11 @@ export default function AccountSettingsPage() {
         </Card>
 
         {/* Danger Zone */}
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">Danger Zone</CardTitle>
-            <CardDescription>
-              Irreversible and destructive actions for your account.
-            </CardDescription>
+        <Card className="border-red-100 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-medium text-red-500">
+              Danger Zone
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm mb-4">
@@ -498,6 +393,7 @@ export default function AccountSettingsPage() {
               variant="destructive"
               onClick={handleDeleteAccount}
               disabled={isLoading}
+              className="bg-red-500 hover:bg-red-600 text-white h-9"
             >
               Delete Account
             </Button>

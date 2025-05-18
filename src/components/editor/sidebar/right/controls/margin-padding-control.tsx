@@ -13,63 +13,52 @@ interface SpacingValues {
   left: number;
 }
 
+// Updated interface to match how it's being used in StyleEditor
 interface MarginPaddingControlProps {
-  margin: SpacingValues;
-  padding: SpacingValues;
-  onMarginChange: (values: SpacingValues) => void;
-  onPaddingChange: (values: SpacingValues) => void;
+  value: any; // Accept the value prop
+  onChange: (value: any) => void; // Accept the onChange prop
+  type: string; // Accept the type prop ("margin" or "padding")
 }
 
 export const MarginPaddingControl: React.FC<MarginPaddingControlProps> = ({
-  margin,
-  padding,
-  onMarginChange,
-  onPaddingChange,
+  value = {}, // Default to empty object if not provided
+  onChange,
+  type = "margin", // Default to "margin" if not specified
 }) => {
-  const [activeTab, setActiveTab] = useState<string>("margin");
   const [linked, setLinked] = useState<boolean>(false);
 
-  const handleMarginChange = (position: keyof SpacingValues, value: number) => {
-    const newValues = { ...margin };
-
-    if (linked) {
-      // If linked, update all values
-      newValues.top = value;
-      newValues.right = value;
-      newValues.bottom = value;
-      newValues.left = value;
-    } else {
-      // Otherwise just update the specific position
-      newValues[position] = value;
-    }
-
-    onMarginChange(newValues);
+  // Initialize spacing values with defaults
+  const spacingValues: SpacingValues = {
+    top: value.top || 0,
+    right: value.right || 0,
+    bottom: value.bottom || 0,
+    left: value.left || 0,
   };
 
-  const handlePaddingChange = (
+  const handleSpacingChange = (
     position: keyof SpacingValues,
-    value: number
+    newValue: number
   ) => {
-    const newValues = { ...padding };
+    const updatedValues = { ...spacingValues };
 
     if (linked) {
       // If linked, update all values
-      newValues.top = value;
-      newValues.right = value;
-      newValues.bottom = value;
-      newValues.left = value;
+      updatedValues.top = newValue;
+      updatedValues.right = newValue;
+      updatedValues.bottom = newValue;
+      updatedValues.left = newValue;
     } else {
       // Otherwise just update the specific position
-      newValues[position] = value;
+      updatedValues[position] = newValue;
     }
 
-    onPaddingChange(newValues);
+    onChange(updatedValues);
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label>Spacing</Label>
+        <Label>{type === "margin" ? "Margin" : "Padding"}</Label>
         <Toggle
           pressed={linked}
           onPressedChange={setLinked}
@@ -80,62 +69,28 @@ export const MarginPaddingControl: React.FC<MarginPaddingControlProps> = ({
         </Toggle>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="margin">Margin</TabsTrigger>
-          <TabsTrigger value="padding">Padding</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="margin" className="space-y-4">
-          <div className="space-y-4 pt-2">
-            <SpacingControl
-              label="Top"
-              value={margin.top}
-              onChange={(value) => handleMarginChange("top", value)}
-            />
-            <SpacingControl
-              label="Right"
-              value={margin.right}
-              onChange={(value) => handleMarginChange("right", value)}
-            />
-            <SpacingControl
-              label="Bottom"
-              value={margin.bottom}
-              onChange={(value) => handleMarginChange("bottom", value)}
-            />
-            <SpacingControl
-              label="Left"
-              value={margin.left}
-              onChange={(value) => handleMarginChange("left", value)}
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="padding" className="space-y-4">
-          <div className="space-y-4 pt-2">
-            <SpacingControl
-              label="Top"
-              value={padding.top}
-              onChange={(value) => handlePaddingChange("top", value)}
-            />
-            <SpacingControl
-              label="Right"
-              value={padding.right}
-              onChange={(value) => handlePaddingChange("right", value)}
-            />
-            <SpacingControl
-              label="Bottom"
-              value={padding.bottom}
-              onChange={(value) => handlePaddingChange("bottom", value)}
-            />
-            <SpacingControl
-              label="Left"
-              value={padding.left}
-              onChange={(value) => handlePaddingChange("left", value)}
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
+      <div className="space-y-4 pt-2">
+        <SpacingControl
+          label="Top"
+          value={spacingValues.top}
+          onChange={(value) => handleSpacingChange("top", value)}
+        />
+        <SpacingControl
+          label="Right"
+          value={spacingValues.right}
+          onChange={(value) => handleSpacingChange("right", value)}
+        />
+        <SpacingControl
+          label="Bottom"
+          value={spacingValues.bottom}
+          onChange={(value) => handleSpacingChange("bottom", value)}
+        />
+        <SpacingControl
+          label="Left"
+          value={spacingValues.left}
+          onChange={(value) => handleSpacingChange("left", value)}
+        />
+      </div>
 
       <div className="pt-2">
         <div className="border rounded-md p-4">
@@ -146,16 +101,8 @@ export const MarginPaddingControl: React.FC<MarginPaddingControlProps> = ({
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-2">
             <span>
-              Margin:{" "}
-              {activeTab === "margin"
-                ? `${margin.top}, ${margin.right}, ${margin.bottom}, ${margin.left}`
-                : ""}
-            </span>
-            <span>
-              Padding:{" "}
-              {activeTab === "padding"
-                ? `${padding.top}, ${padding.right}, ${padding.bottom}, ${padding.left}`
-                : ""}
+              {type.charAt(0).toUpperCase() + type.slice(1)}:{" "}
+              {`${spacingValues.top}, ${spacingValues.right}, ${spacingValues.bottom}, ${spacingValues.left}`}
             </span>
           </div>
         </div>

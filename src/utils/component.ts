@@ -1,16 +1,28 @@
 import { v4 as uuidv4 } from "uuid";
-import { Component, ComponentType } from "@/types/components";
+import type { Component, ComponentType } from "../types/components";
+
+/**
+ * Generate a unique component ID
+ * @param type - The component type
+ * @returns A unique ID for the component
+ */
+export const generateComponentId = (type: ComponentType): string => {
+  return `${type}-${uuidv4().substring(0, 8)}`;
+};
 
 /**
  * Create a new component with default properties
+ * @param type - The component type
+ * @param parentId - Optional parent component ID
+ * @param initialProps - Optional initial properties
+ * @returns A new component object
  */
 export const createComponent = (
   type: ComponentType,
   parentId?: string,
   initialProps: Record<string, any> = {}
 ): Component => {
-  const id = uuidv4();
-
+  const id = generateComponentId(type);
   const defaultProps = getDefaultPropsForType(type);
 
   return {
@@ -38,6 +50,8 @@ export const createComponent = (
 
 /**
  * Get default props based on component type
+ * @param type - The component type
+ * @returns Default properties for the component type
  */
 export const getDefaultPropsForType = (
   type: ComponentType
@@ -160,6 +174,8 @@ export const getDefaultPropsForType = (
 
 /**
  * Get readable label for component type
+ * @param type - The component type
+ * @returns A formatted label for the component type
  */
 export const getLabelForType = (type: ComponentType): string => {
   // Convert camelCase or kebab-case to Title Case
@@ -173,12 +189,15 @@ export const getLabelForType = (type: ComponentType): string => {
 
 /**
  * Clone a component and all its children
+ * @param component - The component to clone
+ * @param newParentId - Optional new parent ID
+ * @returns A cloned component
  */
 export const cloneComponent = (
   component: Component,
   newParentId?: string
 ): Component => {
-  const clonedId = uuidv4();
+  const clonedId = generateComponentId(component.type);
 
   return {
     ...component,
@@ -195,6 +214,10 @@ export const cloneComponent = (
 
 /**
  * Deeply clone a component tree
+ * @param component - The root component to clone
+ * @param components - Object containing all components
+ * @param newParentId - Optional new parent ID
+ * @returns An object containing all cloned components
  */
 export const cloneComponentTree = (
   component: Component,
@@ -230,38 +253,9 @@ export const cloneComponentTree = (
 };
 
 /**
- * Find component by ID in a component tree
- */
-export const findComponentById = (
-  rootComponents: Record<string, Component>,
-  id: string
-): Component | null => {
-  return rootComponents[id] || null;
-};
-
-/**
- * Find component and its ancestors by ID
- */
-export const findComponentPathById = (
-  rootComponents: Record<string, Component>,
-  id: string
-): Component[] => {
-  const path: Component[] = [];
-  let currentId = id;
-
-  while (currentId) {
-    const component = rootComponents[currentId];
-    if (!component) break;
-
-    path.unshift(component);
-    currentId = component.parentId || "";
-  }
-
-  return path;
-};
-
-/**
  * Check if a component can accept children
+ * @param type - The component type to check
+ * @returns Whether the component can accept children
  */
 export const canAcceptChildren = (type: ComponentType): boolean => {
   const containerTypes: ComponentType[] = [
@@ -277,6 +271,8 @@ export const canAcceptChildren = (type: ComponentType): boolean => {
 
 /**
  * Check if a component can be dragged
+ * @param type - The component type to check
+ * @returns Whether the component can be dragged
  */
 export const isDraggable = (type: ComponentType): boolean => {
   const nonDraggableTypes: ComponentType[] = [
@@ -288,6 +284,9 @@ export const isDraggable = (type: ComponentType): boolean => {
 
 /**
  * Check if child can be added to parent
+ * @param parentType - The parent component type
+ * @param childType - The child component type
+ * @returns Whether the child can be added to the parent
  */
 export const canAddChild = (
   parentType: ComponentType,
@@ -314,6 +313,9 @@ export const canAddChild = (
 
 /**
  * Get all descendants of a component
+ * @param componentId - The component ID
+ * @param components - Object containing all components
+ * @returns Array of component IDs that are descendants
  */
 export const getAllDescendants = (
   componentId: string,
@@ -333,6 +335,9 @@ export const getAllDescendants = (
 
 /**
  * Flatten component tree into a list
+ * @param rootId - The root component ID
+ * @param components - Object containing all components
+ * @returns Array of components in the tree
  */
 export const flattenComponentTree = (
   rootId: string,
@@ -352,4 +357,41 @@ export const flattenComponentTree = (
   }
 
   return result;
+};
+
+/**
+ * Find component by ID in a component tree
+ * @param components - Object containing all components
+ * @param id - The component ID to find
+ * @returns The component or null if not found
+ */
+export const findComponentById = (
+  components: Record<string, Component>,
+  id: string
+): Component | null => {
+  return components[id] || null;
+};
+
+/**
+ * Find component and its ancestors by ID
+ * @param components - Object containing all components
+ * @param id - The component ID to find
+ * @returns Array of components forming the path from root to the component
+ */
+export const findComponentPathById = (
+  components: Record<string, Component>,
+  id: string
+): Component[] => {
+  const path: Component[] = [];
+  let currentId = id;
+
+  while (currentId) {
+    const component = components[currentId];
+    if (!component) break;
+
+    path.unshift(component);
+    currentId = component.parentId || "";
+  }
+
+  return path;
 };

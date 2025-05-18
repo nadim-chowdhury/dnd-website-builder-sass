@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectResponsiveMode,
@@ -42,6 +42,10 @@ export const DEVICE_VIEWPORTS = {
  */
 export const useResponsivePreview = () => {
   const dispatch = useDispatch();
+  // Add state for orientation
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">(
+    "portrait"
+  );
 
   // Get responsive mode and preview width from state
   const responsiveMode = useSelector(selectResponsiveMode);
@@ -85,6 +89,13 @@ export const useResponsivePreview = () => {
   );
 
   /**
+   * Toggle the device orientation
+   */
+  const toggleOrientation = useCallback(() => {
+    setOrientation((prev) => (prev === "portrait" ? "landscape" : "portrait"));
+  }, []);
+
+  /**
    * Get the CSS properties for the responsive preview container
    */
   const getPreviewContainerStyles = useCallback(() => {
@@ -125,6 +136,19 @@ export const useResponsivePreview = () => {
     }
   }, [responsiveMode, previewWidth]);
 
+  // Get the current device height based on the current mode
+  const getCurrentDeviceHeight = useCallback(() => {
+    if (
+      responsiveMode !== "custom" &&
+      DEVICE_VIEWPORTS[responsiveMode as keyof typeof DEVICE_VIEWPORTS]
+    ) {
+      return DEVICE_VIEWPORTS[responsiveMode as keyof typeof DEVICE_VIEWPORTS]
+        .height;
+    }
+    // Default to a reasonable height ratio if in custom mode
+    return Math.round(previewWidth * 0.5625); // 16:9 aspect ratio
+  }, [responsiveMode, previewWidth]);
+
   return {
     responsiveMode,
     previewWidth,
@@ -134,6 +158,12 @@ export const useResponsivePreview = () => {
     getPreviewContainerStyles,
     isMode,
     getCurrentMediaQuery,
+    // Add the device property for backwards compatibility with Canvas component
+    device: responsiveMode as string, // Cast to string to match expected type in Canvas
+    width: previewWidth, // Adding width property to match Canvas expectation
+    height: getCurrentDeviceHeight(), // Add height property needed by ResponsiveView
+    orientation, // Add orientation property needed by ResponsiveView
+    toggleOrientation, // Add method to toggle orientation
   };
 };
 

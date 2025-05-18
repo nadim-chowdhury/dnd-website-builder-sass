@@ -8,9 +8,15 @@ import DropZone from "./drop-zone";
 import Placeholder from "./placeholder";
 import ErrorBoundary from "@/components/common/error-boundary";
 import { cn } from "@/lib/utils";
-import { selectBuilderComponents } from "@/redux/selectors/builder-selectors";
-import { setSelectedComponentId } from "@/redux/slices/builderSlice";
-import type { ComponentItem } from "@/types/components";
+import { selectComponents } from "@/redux/selectors/builder-selectors";
+import { selectComponent } from "@/redux/slices/builderSlice";
+import type {
+  Component,
+  ComponentType,
+  ComponentProps,
+} from "@/types/components";
+// Import the component registry - adjust the path if needed
+import ComponentRegistry from "@/lib/component-registry";
 
 interface CanvasProps {
   className?: string;
@@ -24,10 +30,23 @@ interface CanvasProps {
 const Canvas: React.FC<CanvasProps> = ({ className = "", projectId }) => {
   const dispatch = useDispatch();
   const canvasRef = useRef<HTMLDivElement>(null);
-  const components = useSelector(selectBuilderComponents);
-  const { isDragging, draggedComponent } = useDragDrop();
+  const components = useSelector(selectComponents);
+  const { isDragging, draggedItem } = useDragDrop();
   const { selectedComponentId } = useEditorState();
-  const { device, width: deviceWidth } = useResponsivePreview();
+
+  // Get responsive preview values - note the aliasing for compatibility
+  const {
+    device,
+    responsiveMode,
+    width: deviceWidth,
+    previewWidth,
+  } = useResponsivePreview();
+
+  // Use either device or responsiveMode based on what's available
+  const currentDevice = device || responsiveMode;
+  // Use either deviceWidth or previewWidth based on what's available
+  const currentWidth = deviceWidth || previewWidth;
+
   const [canvasScale, setCanvasScale] = useState<number>(1);
 
   // Handle click outside components to deselect
@@ -37,7 +56,7 @@ const Canvas: React.FC<CanvasProps> = ({ className = "", projectId }) => {
         if (canvasRef.current.contains(e.target)) {
           // Check if the click was directly on the canvas and not on a component
           if (e.target === canvasRef.current) {
-            dispatch(setSelectedComponentId(null));
+            dispatch(selectComponent(null));
           }
         }
       }
@@ -52,20 +71,20 @@ const Canvas: React.FC<CanvasProps> = ({ className = "", projectId }) => {
   // Calculate scale based on device preview
   useEffect(() => {
     const calculateScale = () => {
-      if (device === "mobile") {
+      if (currentDevice === "mobile") {
         return 0.5;
-      } else if (device === "tablet") {
+      } else if (currentDevice === "tablet") {
         return 0.75;
       }
       return 1;
     };
 
     setCanvasScale(calculateScale());
-  }, [device]);
+  }, [currentDevice]);
 
   // Recursive component rendering function
   const renderComponents = (
-    componentItems: ComponentItem[],
+    componentItems: Component[],
     parentId: string | null = null
   ) => {
     if (!componentItems) return null;
@@ -73,9 +92,11 @@ const Canvas: React.FC<CanvasProps> = ({ className = "", projectId }) => {
     return componentItems
       .filter((item) => item.parentId === parentId)
       .map((item) => {
-        // Check if component has a renderer
-        const Component = item.type;
-        if (!Component) {
+        // Get the React component from our registry based on component type
+        const ComponentToRender =
+          ComponentRegistry[item.type as keyof typeof ComponentRegistry];
+
+        if (!ComponentToRender) {
           return (
             <Placeholder
               key={item.id}
@@ -89,20 +110,33 @@ const Canvas: React.FC<CanvasProps> = ({ className = "", projectId }) => {
 
         return (
           <ErrorBoundary key={item.id}>
-            <Component
+            <ComponentToRender
               id={item.id}
               {...item.props}
               data-component-id={item.id}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
-                dispatch(setSelectedComponentId(item.id));
+                dispatch(selectComponent(item.id));
               }}
             >
               {childComponents}
-            </Component>
+            </ComponentToRender>
           </ErrorBoundary>
         );
       });
+  };
+
+  // Transform components to ensure they match the Component type
+  const transformComponents = (): Component[] => {
+    if (!components) return [];
+
+    return Object.entries(components).map(([id, component]) => ({
+      ...component,
+      id,
+      props: component.props || ({} as ComponentProps), // Ensure props is never undefined
+      // Handle styles properly without explicit type
+      styles: component.styles || {},
+    }));
   };
 
   return (
@@ -120,15 +154,15 @@ const Canvas: React.FC<CanvasProps> = ({ className = "", projectId }) => {
           ref={canvasRef}
           className={cn(
             "bg-white min-h-screen shadow-lg transition-all duration-200",
-            device === "desktop" ? "w-full max-w-screen-xl" : "",
-            device === "tablet" ? "w-[768px]" : "",
-            device === "mobile" ? "w-[375px]" : ""
+            currentDevice === "desktop" ? "w-full max-w-screen-xl" : "",
+            currentDevice === "tablet" ? "w-[768px]" : "",
+            currentDevice === "mobile" ? "w-[375px]" : ""
           )}
-          style={{ width: deviceWidth ? `${deviceWidth}px` : undefined }}
+          style={{ width: currentWidth ? `${currentWidth}px` : undefined }}
         >
           {/* Canvas content */}
-          {components && components.length > 0 ? (
-            renderComponents(components)
+          {components && Object.keys(components).length > 0 ? (
+            renderComponents(transformComponents())
           ) : (
             <div className="h-screen flex items-center justify-center p-4 text-center">
               <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 max-w-xl mx-auto">

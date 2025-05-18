@@ -9,6 +9,7 @@ interface AlignmentControlProps {
   onChange: (value: string) => void;
   label?: string;
   showJustify?: boolean;
+  type?: string; // Added the type prop to the interface
 }
 
 export function AlignmentControl({
@@ -16,6 +17,7 @@ export function AlignmentControl({
   onChange,
   label = "Alignment",
   showJustify = false,
+  type = "text", // Default to "text" for backward compatibility
 }: AlignmentControlProps) {
   return (
     <div className="space-y-2">

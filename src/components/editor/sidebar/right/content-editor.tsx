@@ -7,7 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { selectSelectedComponent } from "@/redux/selectors/builder-selectors";
-import { updateComponentContent } from "@/redux/slices/builderSlice";
+import { updateComponent } from "@/redux/slices/builderSlice";
+// Import the missing ComponentType enum
+import { Component, ComponentType } from "@/types/components";
 import { Separator } from "@/components/ui/separator";
 import {
   Popover,
@@ -28,7 +30,7 @@ import {
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { FontSelect } from "./controls/font-control";
-import { ColorPicker } from "./controls/color-control";
+import ColorPicker from "./controls/color-control";
 
 interface ContentEditorProps {
   className?: string;
@@ -47,14 +49,16 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ className }) => {
   });
 
   useEffect(() => {
-    if (selectedComponent && selectedComponent.content) {
-      setContentValues({
-        text: selectedComponent.content.text || "",
-        alt: selectedComponent.content.alt || "",
-        href: selectedComponent.content.href || "",
-        src: selectedComponent.content.src || "",
-        title: selectedComponent.content.title || "",
-      });
+    if (selectedComponent) {
+      // Extract content values from props or directly from component fields
+      const content = {
+        text: selectedComponent.props?.text || "",
+        alt: selectedComponent.props?.alt || "",
+        href: selectedComponent.props?.href || "",
+        src: selectedComponent.props?.src || "",
+        title: selectedComponent.props?.title || "",
+      };
+      setContentValues(content);
     }
   }, [selectedComponent]);
 
@@ -77,25 +81,43 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ className }) => {
     const updatedValues = { ...contentValues, [field]: value };
     setContentValues(updatedValues);
 
-    // Dispatch action to update component content
+    // Dispatch action to update component props instead of content
     dispatch(
-      updateComponentContent({
+      updateComponent({
         id: selectedComponent.id,
-        content: { ...selectedComponent.content, [field]: value },
+        changes: {
+          props: { ...selectedComponent.props, [field]: value },
+        },
+      })
+    );
+  };
+
+  // Handle style change for formatting tab
+  const handleStyleChange = (property: string, value: any) => {
+    dispatch(
+      updateComponent({
+        id: selectedComponent.id,
+        changes: {
+          styles: { ...selectedComponent.styles, [property]: value },
+        },
       })
     );
   };
 
   // Determine which fields to show based on component type
+  // Fix: Use the proper ComponentType enum for comparison
   const showTextField =
-    selectedComponent.type === "heading" ||
-    selectedComponent.type === "text" ||
-    selectedComponent.type === "button";
+    selectedComponent.type === ComponentType.HEADING ||
+    selectedComponent.type === ComponentType.TEXT ||
+    selectedComponent.type === ComponentType.BUTTON;
 
-  const showImageFields = selectedComponent.type === "image";
+  const showImageFields = selectedComponent.type === ComponentType.IMAGE;
+
   const showLinkFields =
-    selectedComponent.type === "button" || selectedComponent.type === "link";
-  const showVideoFields = selectedComponent.type === "video";
+    selectedComponent.type === ComponentType.BUTTON ||
+    selectedComponent.type === ComponentType.LINK;
+
+  const showVideoFields = selectedComponent.type === ComponentType.VIDEO;
 
   return (
     <Card className={className}>
@@ -113,8 +135,8 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ className }) => {
             {showTextField && (
               <div className="space-y-2">
                 <Label htmlFor="text-content">Text Content</Label>
-                {selectedComponent.type === "text" ||
-                selectedComponent.type === "heading" ? (
+                {selectedComponent.type === ComponentType.TEXT ||
+                selectedComponent.type === ComponentType.HEADING ? (
                   <Textarea
                     id="text-content"
                     value={contentValues.text}
@@ -221,13 +243,42 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ className }) => {
                 <div className="space-y-2">
                   <Label>Text Formatting</Label>
                   <div className="flex flex-wrap gap-2">
-                    <Toggle aria-label="Toggle bold">
+                    <Toggle
+                      aria-label="Toggle bold"
+                      pressed={selectedComponent.styles?.fontWeight === "bold"}
+                      onPressedChange={(pressed) =>
+                        handleStyleChange(
+                          "fontWeight",
+                          pressed ? "bold" : "normal"
+                        )
+                      }
+                    >
                       <Bold className="h-4 w-4" />
                     </Toggle>
-                    <Toggle aria-label="Toggle italic">
+                    <Toggle
+                      aria-label="Toggle italic"
+                      pressed={selectedComponent.styles?.fontStyle === "italic"}
+                      onPressedChange={(pressed) =>
+                        handleStyleChange(
+                          "fontStyle",
+                          pressed ? "italic" : "normal"
+                        )
+                      }
+                    >
                       <Italic className="h-4 w-4" />
                     </Toggle>
-                    <Toggle aria-label="Toggle underline">
+                    <Toggle
+                      aria-label="Toggle underline"
+                      pressed={
+                        selectedComponent.styles?.textDecoration === "underline"
+                      }
+                      onPressedChange={(pressed) =>
+                        handleStyleChange(
+                          "textDecoration",
+                          pressed ? "underline" : "none"
+                        )
+                      }
+                    >
                       <Underline className="h-4 w-4" />
                     </Toggle>
                   </div>
@@ -236,13 +287,31 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ className }) => {
                 <div className="space-y-2">
                   <Label>Alignment</Label>
                   <div className="flex gap-2">
-                    <Toggle aria-label="Align left">
+                    <Toggle
+                      aria-label="Align left"
+                      pressed={selectedComponent.styles?.textAlign === "left"}
+                      onPressedChange={() =>
+                        handleStyleChange("textAlign", "left")
+                      }
+                    >
                       <AlignLeft className="h-4 w-4" />
                     </Toggle>
-                    <Toggle aria-label="Align center">
+                    <Toggle
+                      aria-label="Align center"
+                      pressed={selectedComponent.styles?.textAlign === "center"}
+                      onPressedChange={() =>
+                        handleStyleChange("textAlign", "center")
+                      }
+                    >
                       <AlignCenter className="h-4 w-4" />
                     </Toggle>
-                    <Toggle aria-label="Align right">
+                    <Toggle
+                      aria-label="Align right"
+                      pressed={selectedComponent.styles?.textAlign === "right"}
+                      onPressedChange={() =>
+                        handleStyleChange("textAlign", "right")
+                      }
+                    >
                       <AlignRight className="h-4 w-4" />
                     </Toggle>
                   </div>
@@ -252,9 +321,7 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ className }) => {
                   <Label>Font</Label>
                   <FontSelect
                     value={selectedComponent.styles?.fontFamily || "Inter"}
-                    onChange={(value) => {
-                      // Dispatch action to update font family
-                    }}
+                    onChange={(value) => handleStyleChange("fontFamily", value)}
                   />
                 </div>
 
@@ -263,10 +330,8 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ className }) => {
                 <div className="space-y-2">
                   <Label>Text Color</Label>
                   <ColorPicker
-                    color={selectedComponent.styles?.color || "#000000"}
-                    onChange={(color) => {
-                      // Dispatch action to update text color
-                    }}
+                    value={selectedComponent.styles?.color || "#000000"}
+                    onChange={(color) => handleStyleChange("color", color)}
                   />
                 </div>
               </>

@@ -1,6 +1,71 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { ComponentType } from "../../types/components";
+import { Component } from "../slices/builderSlice";
+
+// Extended Component interface to include optional properties used in selectors
+interface ExtendedComponent extends Component {
+  locked?: boolean;
+  static?: boolean;
+}
+
+// Define interfaces for component objects with children
+// Note: This interface now correctly represents the hierarchical component structure
+interface ComponentWithId extends Omit<ExtendedComponent, "children"> {
+  id: string;
+  children?: ComponentWithId[]; // Children are now ComponentWithId objects, not string IDs
+}
+
+// Project and EditorOptions interfaces
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  // Add other project properties as needed
+}
+
+interface EditorOptions {
+  showGrid: boolean;
+  snapToGrid: boolean;
+  gridSize: number;
+  // Add other editor settings as needed
+}
+
+// Extend BuilderState to include projects and editor settings
+interface BuilderState {
+  // Existing properties
+  components: Record<string, Component>;
+  selectedComponentId: string | null;
+  hoveredComponentId: string | null;
+  canvasConfig: {
+    zoomLevel: number;
+    width: number;
+    height: number;
+    // other canvas config properties
+  };
+  history: {
+    past: any[];
+    future: any[];
+  };
+  editorMode: string;
+  currentBreakpoint: string;
+  dragState: {
+    resizing: any | null;
+    // other drag state properties
+  };
+  unsavedChanges: boolean;
+  activePanel: string;
+  domRefIds: Record<string, string>;
+
+  // New properties
+  projects: Record<string, Project>;
+  currentProjectId: string | null;
+  editorSettings: EditorOptions;
+
+  // Responsive preview properties
+  responsiveMode: string;
+  responsivePreviewWidth: number;
+}
 
 // Basic selectors
 export const selectBuilderState = (state: RootState) => state.builder;
@@ -23,14 +88,83 @@ export const selectActivePanel = (state: RootState) =>
 export const selectZoomLevel = (state: RootState) =>
   state.builder.canvasConfig.zoomLevel;
 
+// Project selectors
+export const selectProjects = (state: RootState) =>
+  state.builder.projects || {};
+export const selectCurrentProjectId = (state: RootState) =>
+  state.builder.currentProjectId;
+
+export const selectCurrentProjectData = createSelector(
+  [selectProjects, selectCurrentProjectId],
+  (projects, currentProjectId) =>
+    currentProjectId && projects ? projects[currentProjectId] : null
+);
+
+// Editor settings selector
+export const selectEditorSettings = (state: RootState) =>
+  state.builder.editorSettings || {
+    showGrid: true,
+    snapToGrid: true,
+    gridSize: 10,
+  };
+
+// Responsive preview selectors
+export const selectResponsiveMode = (state: RootState) =>
+  state.builder.responsiveMode || "desktop";
+
+export const selectResponsivePreviewWidth = (state: RootState) =>
+  state.builder.responsivePreviewWidth || 1920;
+
+// Editor viewport selector
+export const selectEditorViewport = createSelector(
+  [selectCanvasConfig],
+  (canvasConfig) => ({
+    width: canvasConfig.width || 1920,
+    height: canvasConfig.height || 1080,
+  })
+);
+
 // Derived selectors
 export const selectComponentsArray = createSelector(
   [selectComponents],
   (components) =>
     Object.entries(components).map(([id, component]) => ({
-      id,
       ...component,
+      id,
     }))
+);
+
+// Add this missing selector to get all components
+export const selectAllComponents = createSelector(
+  [selectComponents],
+  (components) =>
+    Object.entries(components).map(([id, component]) => ({
+      ...component,
+      id,
+    }))
+);
+
+// Add this missing selector to get a component by ID
+export const selectComponentById = createSelector(
+  [selectComponents, (_, componentId: string) => componentId],
+  (components, componentId) =>
+    componentId && components[componentId]
+      ? { ...components[componentId], id: componentId }
+      : null
+);
+
+// Add this missing selector to get root components
+export const selectRootComponents = createSelector(
+  [selectComponents],
+  (components) => {
+    return Object.entries(components)
+      .filter(([_, component]) => !component.parentId)
+      .map(([id, component]) => ({
+        ...component,
+        id,
+      }))
+      .sort((a, b) => a.order - b.order);
+  }
 );
 
 export const selectSelectedComponent = createSelector(
@@ -55,8 +189,8 @@ export const selectParentComponents = createSelector(
           component.type === ComponentType.COLUMN
       )
       .map(([id, component]) => ({
-        id,
         ...component,
+        id,
       }));
   }
 );
@@ -69,8 +203,8 @@ export const selectComponentChildren = createSelector(
     return Object.entries(components)
       .filter(([_, component]) => component.parentId === componentId)
       .map(([id, component]) => ({
-        id,
         ...component,
+        id,
       }))
       .sort((a, b) => a.order - b.order);
   }
@@ -82,21 +216,23 @@ export const selectComponentHierarchy = createSelector(
     // Find root components (those without parents)
     const rootComponents = Object.entries(components)
       .filter(([_, component]) => !component.parentId)
-      .map(([id, component]) => ({ id, ...component }))
+      .map(([id, component]) => ({ ...component, id }))
       .sort((a, b) => a.order - b.order);
 
     // Recursive function to build component tree
-    const buildComponentTree = (rootItems: any[]) => {
+    const buildComponentTree = (
+      rootItems: (Omit<Component, "children"> & { id: string })[]
+    ): ComponentWithId[] => {
       return rootItems.map((rootItem) => {
         const children = Object.entries(components)
           .filter(([_, component]) => component.parentId === rootItem.id)
-          .map(([id, component]) => ({ id, ...component }))
+          .map(([id, component]) => ({ ...component, id }))
           .sort((a, b) => a.order - b.order);
 
         return {
           ...rootItem,
           children: children.length > 0 ? buildComponentTree(children) : [],
-        };
+        } as ComponentWithId;
       });
     };
 
@@ -120,10 +256,10 @@ export const selectComponentStylesForBreakpoint = createSelector(
     if (!component) return null;
 
     // Get the base styles
-    const baseStyles = component.styles.base || {};
+    const baseStyles = component.styles?.base || {};
 
     // Get the responsive styles for the current breakpoint
-    const responsiveStyles = component.styles.responsive?.[breakpoint] || {};
+    const responsiveStyles = component.styles?.responsive?.[breakpoint] || {};
 
     // Merge the styles
     return {
@@ -165,8 +301,9 @@ export const selectComponentsInPath = createSelector(
 export const selectIsComponentDraggable = createSelector(
   [selectComponents, (_, componentId: string) => componentId],
   (components, componentId) => {
-    const component = components[componentId];
-    return component ? !component.locked && !component.static : false;
+    const component = components[componentId] as ExtendedComponent;
+    // Consider a component draggable by default if the locked/static properties don't exist
+    return component ? !(component.locked || component.static || false) : false;
   }
 );
 
@@ -174,3 +311,20 @@ export const selectIsResizing = createSelector(
   [selectDragState],
   (dragState) => dragState.resizing !== null
 );
+
+// Preview mode selector - using EditorMode instead of undefined isPreview property
+export const selectIsPreview = createSelector(
+  [selectEditorMode],
+  (mode) => mode === "preview"
+);
+
+// Helper selector to determine if we're in edit mode
+export const selectIsEditing = createSelector(
+  [selectEditorMode],
+  (mode) => mode === "edit"
+);
+
+// DOM reference selectors
+export const selectDomRefIds = (state: RootState) => state.builder.domRefIds;
+export const selectDomRefIdForComponent = (id: string) => (state: RootState) =>
+  state.builder.domRefIds[id] || null;

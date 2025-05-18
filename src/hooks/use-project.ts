@@ -11,6 +11,7 @@ interface CreateProjectParams {
   name: string;
   description?: string;
   templateId?: string;
+  template?: any;
 }
 
 export function useProjects() {

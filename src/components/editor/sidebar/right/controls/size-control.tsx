@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Toggle } from "@/components/ui/toggle";
 import { Slider } from "@/components/ui/slider";
 import {
   Select,
@@ -10,296 +9,165 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Link, LockIcon, UnlockIcon } from "lucide-react";
 
 interface SizeControlProps {
-  width: string | number;
-  height: string | number;
-  onWidthChange: (value: string | number) => void;
-  onHeightChange: (value: string | number) => void;
-  minWidth?: number;
-  maxWidth?: number;
-  minHeight?: number;
-  maxHeight?: number;
-  allowResponsive?: boolean;
+  value: string | number;
+  onChange: (value: string | number) => void;
+  options?: string[];
+  allowCustom?: boolean;
+  minValue?: number;
+  maxValue?: number;
 }
 
-export const SizeControl: React.FC<SizeControlProps> = ({
-  width,
-  height,
-  onWidthChange,
-  onHeightChange,
-  minWidth = 0,
-  maxWidth = 1000,
-  minHeight = 0,
-  maxHeight = 1000,
-  allowResponsive = true,
+const SizeControl: React.FC<SizeControlProps> = ({
+  value,
+  onChange,
+  options = ["auto", "100%", "75%", "50%", "25%"],
+  allowCustom = false,
+  minValue = 0,
+  maxValue = 1000,
 }) => {
-  const [aspectLocked, setAspectLocked] = useState(false);
-  const [widthUnit, setWidthUnit] = useState<"px" | "%" | "auto">("px");
-  const [heightUnit, setHeightUnit] = useState<"px" | "%" | "auto">("px");
+  type UnitType = "px" | "%" | "auto";
 
-  // Convert width and height to numeric values
-  const getNumericWidth = (): number => {
-    if (typeof width === "number") return width;
-    if (width === "auto") return 0;
-    return parseInt(width, 10) || 0;
+  const getInitialUnit = (): UnitType => {
+    if (value === "auto") return "auto";
+    if (typeof value === "string" && value.endsWith("%")) return "%";
+    return "px";
   };
 
-  const getNumericHeight = (): number => {
-    if (typeof height === "number") return height;
-    if (height === "auto") return 0;
-    return parseInt(height, 10) || 0;
-  };
+  const [unit, setUnit] = useState<UnitType>(getInitialUnit);
 
-  const numericWidth = getNumericWidth();
-  const numericHeight = getNumericHeight();
-  const aspectRatio = numericHeight !== 0 ? numericWidth / numericHeight : 0;
-
-  const handleWidthChange = (newWidth: number) => {
-    const newWidthValue = widthUnit === "auto" ? "auto" : newWidth;
-    onWidthChange(newWidthValue);
-
-    // If aspect ratio is locked, update height accordingly
-    if (
-      aspectLocked &&
-      aspectRatio !== 0 &&
-      widthUnit !== "auto" &&
-      heightUnit !== "auto"
-    ) {
-      const newHeight = Math.round(newWidth / aspectRatio);
-      onHeightChange(newHeight);
+  const getNumericValue = (): number => {
+    if (typeof value === "number") return value;
+    if (value === "auto") return 0;
+    if (typeof value === "string" && value.endsWith("%")) {
+      return parseInt(value, 10) || 0;
     }
+    return parseInt(value as string, 10) || 0;
   };
 
-  const handleHeightChange = (newHeight: number) => {
-    const newHeightValue = heightUnit === "auto" ? "auto" : newHeight;
-    onHeightChange(newHeightValue);
+  const numericValue = getNumericValue();
 
-    // If aspect ratio is locked, update width accordingly
-    if (
-      aspectLocked &&
-      aspectRatio !== 0 &&
-      widthUnit !== "auto" &&
-      heightUnit !== "auto"
-    ) {
-      const newWidth = Math.round(newHeight * aspectRatio);
-      onWidthChange(newWidth);
-    }
-  };
-
-  const handleWidthUnitChange = (value: "px" | "%" | "auto") => {
-    setWidthUnit(value);
-
-    if (value === "auto") {
-      onWidthChange("auto");
-    } else if (value === "%") {
-      // Convert to percentage (assuming 100% is maxWidth)
-      const percentage = Math.round((numericWidth / maxWidth) * 100);
-      onWidthChange(`${Math.min(percentage, 100)}%`);
+  const handleValueChange = (newValue: number) => {
+    if (unit === "auto") {
+      onChange("auto");
+    } else if (unit === "%") {
+      onChange(`${newValue}%`);
     } else {
-      // Convert percentage to pixels if coming from %
-      if (typeof width === "string" && width.endsWith("%")) {
-        const percentage = parseInt(width, 10);
-        onWidthChange(Math.round((percentage / 100) * maxWidth));
-      } else if (width === "auto") {
-        onWidthChange(200); // Default width if coming from auto
+      onChange(newValue);
+    }
+  };
+
+  const handleUnitChange = (newUnit: UnitType) => {
+    setUnit(newUnit);
+
+    if (newUnit === "auto") {
+      onChange("auto");
+    } else if (newUnit === "%") {
+      const percentage = Math.round((numericValue / maxValue) * 100);
+      onChange(`${Math.min(percentage, 100)}%`);
+    } else {
+      if (typeof value === "string" && value.endsWith("%")) {
+        const percentage = parseInt(value, 10);
+        onChange(Math.round((percentage / 100) * maxValue));
+      } else if (value === "auto") {
+        onChange(200);
+      } else {
+        onChange(numericValue);
       }
     }
   };
 
-  const handleHeightUnitChange = (value: "px" | "%" | "auto") => {
-    setHeightUnit(value);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    if (!inputValue) return;
 
-    if (value === "auto") {
-      onHeightChange("auto");
-    } else if (value === "%") {
-      // Convert to percentage (assuming 100% is maxHeight)
-      const percentage = Math.round((numericHeight / maxHeight) * 100);
-      onHeightChange(`${Math.min(percentage, 100)}%`);
+    const numericInputValue = parseInt(inputValue, 10);
+    if (!isNaN(numericInputValue)) {
+      handleValueChange(numericInputValue);
+    }
+  };
+
+  const handleOptionSelect = (option: string) => {
+    onChange(option);
+
+    if (option === "auto") {
+      setUnit("auto");
+    } else if (option.endsWith("%")) {
+      setUnit("%");
     } else {
-      // Convert percentage to pixels if coming from %
-      if (typeof height === "string" && height.endsWith("%")) {
-        const percentage = parseInt(height, 10);
-        onHeightChange(Math.round((percentage / 100) * maxHeight));
-      } else if (height === "auto") {
-        onHeightChange(200); // Default height if coming from auto
-      }
-    }
-  };
-
-  // Handle input change for width
-  const handleWidthInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (!value) return;
-
-    const numericValue = parseInt(value, 10);
-    if (!isNaN(numericValue)) {
-      handleWidthChange(numericValue);
-    }
-  };
-
-  // Handle input change for height
-  const handleHeightInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (!value) return;
-
-    const numericValue = parseInt(value, 10);
-    if (!isNaN(numericValue)) {
-      handleHeightChange(numericValue);
+      setUnit("px");
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label>Size</Label>
-        <Toggle
-          pressed={aspectLocked}
-          onPressedChange={setAspectLocked}
-          aria-label="Lock aspect ratio"
-          size="sm"
-        >
-          {aspectLocked ? (
-            <LockIcon className="h-4 w-4" />
-          ) : (
-            <UnlockIcon className="h-4 w-4" />
+    <div className="space-y-3">
+      {options && options.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={`px-2 py-1 text-xs rounded border ${
+                value === option
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background border-input hover:bg-accent hover:text-accent-foreground"
+              }`}
+              onClick={() => handleOptionSelect(option)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {allowCustom && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="size-input">Custom</Label>
+            <Select
+              value={unit}
+              onValueChange={(v) => handleUnitChange(v as UnitType)}
+            >
+              <SelectTrigger className="w-20 h-8">
+                <SelectValue placeholder="Unit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="px">px</SelectItem>
+                <SelectItem value="%">%</SelectItem>
+                <SelectItem value="auto">Auto</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {unit !== "auto" && (
+            <div className="grid grid-cols-[1fr_80px] gap-2">
+              <Slider
+                min={minValue}
+                max={unit === "px" ? maxValue : 100}
+                step={1}
+                value={[
+                  unit === "%"
+                    ? parseInt(value as string, 10) || 100
+                    : numericValue,
+                ]}
+                onValueChange={(values) => handleValueChange(values[0])}
+              />
+              <Input
+                id="size-input"
+                type="number"
+                min={minValue}
+                max={unit === "px" ? maxValue : 100}
+                value={
+                  unit === "%"
+                    ? parseInt(value as string, 10) || 100
+                    : numericValue
+                }
+                onChange={handleInputChange}
+                className="w-20 h-8"
+              />
+            </div>
           )}
-        </Toggle>
-      </div>
-
-      {/* Width Control */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="width-input">Width</Label>
-          <Select
-            value={widthUnit}
-            onValueChange={(v) =>
-              handleWidthUnitChange(v as "px" | "%" | "auto")
-            }
-          >
-            <SelectTrigger className="w-20 h-8">
-              <SelectValue placeholder="Unit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="px">px</SelectItem>
-              <SelectItem value="%">%</SelectItem>
-              <SelectItem value="auto">Auto</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {widthUnit !== "auto" && (
-          <div className="grid grid-cols-[1fr_80px] gap-2">
-            <Slider
-              disabled={widthUnit === "auto"}
-              min={minWidth}
-              max={widthUnit === "px" ? maxWidth : 100}
-              step={1}
-              value={[
-                widthUnit === "%"
-                  ? parseInt(width as string, 10) || 100
-                  : numericWidth,
-              ]}
-              onValueChange={(values) => handleWidthChange(values[0])}
-            />
-            <Input
-              id="width-input"
-              type="number"
-              min={minWidth}
-              max={widthUnit === "px" ? maxWidth : 100}
-              value={
-                widthUnit === "%"
-                  ? parseInt(width as string, 10) || 100
-                  : numericWidth
-              }
-              onChange={handleWidthInputChange}
-              disabled={widthUnit === "auto"}
-              className="w-20 h-8"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Height Control */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="height-input">Height</Label>
-          <Select
-            value={heightUnit}
-            onValueChange={(v) =>
-              handleHeightUnitChange(v as "px" | "%" | "auto")
-            }
-          >
-            <SelectTrigger className="w-20 h-8">
-              <SelectValue placeholder="Unit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="px">px</SelectItem>
-              <SelectItem value="%">%</SelectItem>
-              <SelectItem value="auto">Auto</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {heightUnit !== "auto" && (
-          <div className="grid grid-cols-[1fr_80px] gap-2">
-            <Slider
-              disabled={heightUnit === "auto"}
-              min={minHeight}
-              max={heightUnit === "px" ? maxHeight : 100}
-              step={1}
-              value={[
-                heightUnit === "%"
-                  ? parseInt(height as string, 10) || 100
-                  : numericHeight,
-              ]}
-              onValueChange={(values) => handleHeightChange(values[0])}
-            />
-            <Input
-              id="height-input"
-              type="number"
-              min={minHeight}
-              max={heightUnit === "px" ? maxHeight : 100}
-              value={
-                heightUnit === "%"
-                  ? parseInt(height as string, 10) || 100
-                  : numericHeight
-              }
-              onChange={handleHeightInputChange}
-              disabled={heightUnit === "auto"}
-              className="w-20 h-8"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Responsive settings if allowed */}
-      {allowResponsive && (
-        <div className="pt-2">
-          <Label>Responsive Behavior</Label>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="mobile-responsive"
-                className="rounded"
-              />
-              <Label htmlFor="mobile-responsive" className="text-sm">
-                Mobile
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="tablet-responsive"
-                className="rounded"
-              />
-              <Label htmlFor="tablet-responsive" className="text-sm">
-                Tablet
-              </Label>
-            </div>
-          </div>
         </div>
       )}
     </div>

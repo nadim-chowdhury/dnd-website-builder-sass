@@ -5,6 +5,7 @@ import {
   BreakpointType,
   DragState,
 } from "../../types/components";
+import type { ResponsiveMode } from "../../types/editor";
 
 // Define a serializable reference type instead of using HTMLElement directly
 export type DomRefID = string;
@@ -20,6 +21,22 @@ export interface Component {
   styles?: Record<string, any>;
   children?: string[];
   // Add any other properties that your Component type needs
+}
+
+// Project interface
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  // Add other project properties as needed
+}
+
+// Editor settings interface
+export interface EditorOptions {
+  showGrid: boolean;
+  snapToGrid: boolean;
+  gridSize: number;
+  // Add other editor settings as needed
 }
 
 // Define the shape of the builder state
@@ -47,6 +64,15 @@ interface BuilderState {
   activePanel: string | null;
   domRefIds: Record<string, DomRefID | null>; // Store IDs instead of DOM elements
   error: string | null;
+
+  // Add the missing properties
+  projects: Record<string, Project>;
+  currentProjectId: string | null;
+  editorSettings: EditorOptions;
+
+  // Responsive preview properties
+  responsiveMode: ResponsiveMode;
+  responsivePreviewWidth: number;
 }
 
 // Define the initial state
@@ -82,6 +108,19 @@ const initialState: BuilderState = {
   activePanel: "components",
   domRefIds: {}, // Changed from domRefs to domRefIds
   error: null,
+
+  // Initialize the missing properties
+  projects: {},
+  currentProjectId: null,
+  editorSettings: {
+    showGrid: true,
+    snapToGrid: true,
+    gridSize: 10,
+  },
+
+  // Initialize responsive preview properties
+  responsiveMode: "desktop",
+  responsivePreviewWidth: 1920,
 };
 
 // Helper function to save to history
@@ -156,31 +195,32 @@ const builderSlice = createSlice({
     moveComponent: (
       state,
       action: PayloadAction<{
-        id: string;
-        parentId: string | null;
-        index: number;
+        componentId: string;
+        newParentId: string | null;
+        index: number | undefined;
       }>
     ) => {
-      const { id, parentId, index } = action.payload;
-      if (!state.components[id]) return;
+      const { componentId, newParentId, index } = action.payload;
+      if (!state.components[componentId]) return;
 
-      const component = state.components[id];
+      const component = state.components[componentId];
       const oldParentId = component.parentId;
 
       // Update the component's parent
-      state.components[id] = {
+      state.components[componentId] = {
         ...component,
-        parentId,
+        parentId: newParentId,
       };
 
       // Update the order of all affected components
       // Get siblings in the new parent
       const siblings = Object.values(state.components)
-        .filter((c) => c.parentId === parentId && c.id !== id)
+        .filter((c) => c.parentId === newParentId && c.id !== componentId)
         .sort((a, b) => a.order - b.order);
 
-      // Insert the component at the desired index
-      siblings.splice(index, 0, state.components[id]);
+      // Insert the component at the desired index or at the end if index is undefined
+      const insertIndex = index !== undefined ? index : siblings.length;
+      siblings.splice(insertIndex, 0, state.components[componentId]);
 
       // Update the order of all siblings
       siblings.forEach((sibling, idx) => {
@@ -193,7 +233,7 @@ const builderSlice = createSlice({
       });
 
       // If the component moved from another parent, reorder the old siblings
-      if (oldParentId !== parentId) {
+      if (oldParentId !== newParentId) {
         const oldSiblings = Object.values(state.components)
           .filter((c) => c.parentId === oldParentId)
           .sort((a, b) => a.order - b.order);
@@ -249,6 +289,13 @@ const builderSlice = createSlice({
       state.selectedComponentId = newId;
     },
 
+    // NEW ACTION: Create a snapshot of the current state with an optional label
+    createSnapshot: (state, action: PayloadAction<string | undefined>) => {
+      // We don't need to use the label in the state, but it could be useful for debugging
+      // or future enhancements like named history states
+      saveToHistory(state);
+    },
+
     // Selection actions
     selectComponent: (state, action: PayloadAction<string | null>) => {
       state.selectedComponentId = action.payload;
@@ -284,6 +331,15 @@ const builderSlice = createSlice({
         state.selectedComponentId = null;
         state.hoveredComponentId = null;
       }
+    },
+
+    // Responsive preview actions
+    setResponsiveMode: (state, action: PayloadAction<ResponsiveMode>) => {
+      state.responsiveMode = action.payload;
+    },
+
+    setResponsivePreviewWidth: (state, action: PayloadAction<number>) => {
+      state.responsivePreviewWidth = action.payload;
     },
 
     // History actions
@@ -431,6 +487,40 @@ const builderSlice = createSlice({
       state.unsavedChanges = false;
     },
 
+    // Add project management actions
+    addProject: (state, action: PayloadAction<Project>) => {
+      state.projects[action.payload.id] = action.payload;
+    },
+
+    updateProject: (
+      state,
+      action: PayloadAction<{ id: string; changes: Partial<Project> }>
+    ) => {
+      const { id, changes } = action.payload;
+      if (state.projects[id]) {
+        state.projects[id] = { ...state.projects[id], ...changes };
+      }
+    },
+
+    removeProject: (state, action: PayloadAction<string>) => {
+      delete state.projects[action.payload];
+      if (state.currentProjectId === action.payload) {
+        state.currentProjectId = null;
+      }
+    },
+
+    setCurrentProject: (state, action: PayloadAction<string | null>) => {
+      state.currentProjectId = action.payload;
+    },
+
+    // Editor settings actions
+    updateEditorSettings: (
+      state,
+      action: PayloadAction<Partial<EditorOptions>>
+    ) => {
+      state.editorSettings = { ...state.editorSettings, ...action.payload };
+    },
+
     resetBuilder: (state) => {
       return { ...initialState, canvasConfig: { ...state.canvasConfig } };
     },
@@ -443,12 +533,15 @@ export const {
   removeComponent,
   moveComponent,
   duplicateComponent,
+  createSnapshot,
   selectComponent,
   hoverComponent,
   updateCanvasConfig,
   setZoomLevel,
   setBreakpoint,
   setEditorMode,
+  setResponsiveMode,
+  setResponsivePreviewWidth,
   undo,
   redo,
   clearHistory,
@@ -459,9 +552,14 @@ export const {
   endResize,
   setUnsavedChanges,
   setActivePanel,
-  updateComponentDomId, // Renamed from updateComponentDom and fixed to match the reducer
+  updateComponentDomId,
   setError,
   loadProject,
+  addProject,
+  updateProject,
+  removeProject,
+  setCurrentProject,
+  updateEditorSettings,
   resetBuilder,
 } = builderSlice.actions;
 

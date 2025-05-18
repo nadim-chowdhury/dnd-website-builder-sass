@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import DropZone from "./drop-zone";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { useSelector } from "react-redux";
-import { selectBuilderComponents } from "@/redux/selectors/builder-selectors";
+import { selectComponents } from "@/redux/selectors/builder-selectors";
 
 interface GridProps {
   className?: string;
@@ -15,16 +15,20 @@ interface GridProps {
  * Displays a grid of drop zones for component placement
  */
 const Grid: React.FC<GridProps> = ({ className = "", columns = 3 }) => {
-  const { isDragging, draggedComponent } = useDragDrop();
-  const components = useSelector(selectBuilderComponents);
+  const { isDragging, draggedItem } = useDragDrop();
+  const components = useSelector(selectComponents);
 
-  // Don't render if not dragging or no component to place
-  if (!isDragging || !draggedComponent) {
+  // Don't render if not dragging or no item to place
+  if (!isDragging || !draggedItem) {
     return null;
   }
 
+  // Check if there are already components on the canvas
+  // Note: selectComponents returns an object, so we check if it has any keys
+  const hasExistingComponents = Object.keys(components).length > 0;
+
   // Don't show the grid if there are already components on the canvas
-  if (components.length > 0) {
+  if (hasExistingComponents) {
     return null;
   }
 
@@ -34,7 +38,7 @@ const Grid: React.FC<GridProps> = ({ className = "", columns = 3 }) => {
       <div key={`grid-cell-${index}`} className="relative min-h-[150px]">
         <DropZone
           index={index}
-          placeholder={`Drop ${draggedComponent.name} here`}
+          placeholder={`Drop ${draggedItem.type} here`}
           className="h-full"
         />
       </div>

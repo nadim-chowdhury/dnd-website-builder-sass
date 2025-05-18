@@ -42,71 +42,6 @@ export const useDragDrop = () => {
   const draggingRef = useRef<boolean>(false);
 
   /**
-   * Start dragging a component
-   * @param item - The drag item
-   * @param event - The drag event
-   */
-  const startDrag = useCallback(
-    (item: DragItem, event: React.MouseEvent | React.TouchEvent) => {
-      if (!isEditing) return;
-
-      // Get initial position from mouse or touch event
-      const clientX =
-        "touches" in event ? event.touches[0].clientX : event.clientX;
-      const clientY =
-        "touches" in event ? event.touches[0].clientY : event.clientY;
-
-      dragStartPositionRef.current = { x: clientX, y: clientY };
-      draggingRef.current = true;
-      setDraggedItem(item);
-
-      // Add global event listeners for drag movement and end
-      const handleDragMove = (e: MouseEvent | TouchEvent) => {
-        const currentX = "touches" in e ? e.touches[0].clientX : e.clientX;
-        const currentY = "touches" in e ? e.touches[0].clientY : e.clientY;
-
-        // Update UI during drag
-        updateDragUI(currentX, currentY);
-      };
-
-      const handleDragEnd = (e: MouseEvent | TouchEvent) => {
-        const currentX =
-          "touches" in e
-            ? e.changedTouches && e.changedTouches[0]
-              ? e.changedTouches[0].clientX
-              : 0
-            : e.clientX;
-        const currentY =
-          "touches" in e
-            ? e.changedTouches && e.changedTouches[0]
-              ? e.changedTouches[0].clientY
-              : 0
-            : e.clientY;
-
-        // Handle drop at current position
-        handleDrop(currentX, currentY);
-
-        // Clean up
-        draggingRef.current = false;
-        setDraggedItem(null);
-        setDropTarget(null);
-        setDropIndicatorPosition(null);
-
-        window.removeEventListener("mousemove", handleDragMove);
-        window.removeEventListener("touchmove", handleDragMove);
-        window.removeEventListener("mouseup", handleDragEnd);
-        window.removeEventListener("touchend", handleDragEnd);
-      };
-
-      window.addEventListener("mousemove", handleDragMove);
-      window.addEventListener("touchmove", handleDragMove);
-      window.addEventListener("mouseup", handleDragEnd);
-      window.addEventListener("touchend", handleDragEnd);
-    },
-    [isEditing]
-  );
-
-  /**
    * Update drag UI based on current position
    */
   const updateDragUI = useCallback(
@@ -206,7 +141,7 @@ export const useDragDrop = () => {
               moveComponent({
                 componentId: draggedItem.id,
                 newParentId: componentId,
-                index: dropIndex >= 0 ? dropIndex : undefined,
+                index: dropIndex,
               })
             );
 
@@ -216,6 +151,71 @@ export const useDragDrop = () => {
       }
     },
     [draggedItem, dropTarget, dispatch, addNewComponent, setFocus]
+  );
+
+  /**
+   * Start dragging a component
+   * @param item - The drag item
+   * @param event - The drag event
+   */
+  const startDrag = useCallback(
+    (item: DragItem, event: React.MouseEvent | React.TouchEvent) => {
+      if (!isEditing) return;
+
+      // Get initial position from mouse or touch event
+      const clientX =
+        "touches" in event ? event.touches[0].clientX : event.clientX;
+      const clientY =
+        "touches" in event ? event.touches[0].clientY : event.clientY;
+
+      dragStartPositionRef.current = { x: clientX, y: clientY };
+      draggingRef.current = true;
+      setDraggedItem(item);
+
+      // Add global event listeners for drag movement and end
+      const handleDragMove = (e: MouseEvent | TouchEvent) => {
+        const currentX = "touches" in e ? e.touches[0].clientX : e.clientX;
+        const currentY = "touches" in e ? e.touches[0].clientY : e.clientY;
+
+        // Update UI during drag
+        updateDragUI(currentX, currentY);
+      };
+
+      const handleDragEnd = (e: MouseEvent | TouchEvent) => {
+        const currentX =
+          "touches" in e
+            ? e.changedTouches && e.changedTouches[0]
+              ? e.changedTouches[0].clientX
+              : 0
+            : e.clientX;
+        const currentY =
+          "touches" in e
+            ? e.changedTouches && e.changedTouches[0]
+              ? e.changedTouches[0].clientY
+              : 0
+            : e.clientY;
+
+        // Handle drop at current position
+        handleDrop(currentX, currentY);
+
+        // Clean up
+        draggingRef.current = false;
+        setDraggedItem(null);
+        setDropTarget(null);
+        setDropIndicatorPosition(null);
+
+        window.removeEventListener("mousemove", handleDragMove);
+        window.removeEventListener("touchmove", handleDragMove);
+        window.removeEventListener("mouseup", handleDragEnd);
+        window.removeEventListener("touchend", handleDragEnd);
+      };
+
+      window.addEventListener("mousemove", handleDragMove);
+      window.addEventListener("touchmove", handleDragMove);
+      window.addEventListener("mouseup", handleDragEnd);
+      window.addEventListener("touchend", handleDragEnd);
+    },
+    [isEditing, updateDragUI, handleDrop]
   );
 
   // Clean up any lingering state on unmount

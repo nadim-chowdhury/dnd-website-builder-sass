@@ -7,11 +7,11 @@ import FontControl from "./controls/font-control";
 import SizeControl from "./controls/size-control";
 import MarginPaddingControl from "./controls/margin-padding-control";
 import AlignmentControl from "./controls/alignment-control";
-import { updateComponentStyle } from "@/redux/slices/builderSlice";
-import { ComponentInstance } from "@/types/components";
+import { updateComponent } from "@/redux/slices/builderSlice";
+import { Component } from "@/types/components";
 
 interface StyleEditorProps {
-  component: ComponentInstance;
+  component: Component;
 }
 
 /**
@@ -24,25 +24,33 @@ const StyleEditor = ({ component }: StyleEditorProps) => {
   // Update a style property
   const handleStyleChange = useCallback(
     (property: string, value: any) => {
+      // Create a new styles object with the updated property
+      const updatedStyles = {
+        ...(component.styles || {}),
+        [property]: value,
+      };
+
       dispatch(
-        updateComponentStyle({
-          componentId: component.id,
-          property,
-          value,
+        updateComponent({
+          id: component.id,
+          changes: {
+            styles: updatedStyles,
+          },
         })
       );
     },
-    [dispatch, component.id]
+    [dispatch, component.id, component.styles]
   );
 
   // Get current styles with defaults
   const styles = component.styles || {};
 
   // Check if this component type supports styling
-  // In a real app, this would be determined by the component registry
-  const supportsStyles = !component.disableStyles;
+  // In a real app, this would be determined by the component registry or metadata
+  // Using optional chaining and nullish coalescing to safely access the property
+  const supportsStyles = component.metadata?.customData?.supportsStyles ?? true;
 
-  if (!supportsStyles) {
+  if (supportsStyles === false) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <p>This component does not support custom styling</p>
@@ -78,9 +86,7 @@ const StyleEditor = ({ component }: StyleEditorProps) => {
           </div>
         </div>
       </div>
-
       <Separator />
-
       {/* Spacing */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium">Spacing</h3>
@@ -103,11 +109,9 @@ const StyleEditor = ({ component }: StyleEditorProps) => {
           />
         </div>
       </div>
-
       <Separator />
-
-      {/* Typography - Only show for text-based components */}
-      {component.supportsText && (
+      {(component.metadata?.customData?.supportsText ??
+        (component.type === "text" || component.type === "heading")) && (
         <>
           <div className="space-y-4">
             <h3 className="text-sm font-medium">Typography</h3>
@@ -132,7 +136,6 @@ const StyleEditor = ({ component }: StyleEditorProps) => {
           <Separator />
         </>
       )}
-
       {/* Colors */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium">Colors</h3>
@@ -147,7 +150,8 @@ const StyleEditor = ({ component }: StyleEditorProps) => {
             />
           </div>
 
-          {component.supportsText && (
+          {(component.metadata?.customData?.supportsText ??
+            (component.type === "text" || component.type === "heading")) && (
             <div>
               <Label className="text-xs mb-1 block">Text Color</Label>
               <ColorControl
@@ -158,9 +162,7 @@ const StyleEditor = ({ component }: StyleEditorProps) => {
           )}
         </div>
       </div>
-
       <Separator />
-
       {/* Border */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium">Border</h3>

@@ -346,3 +346,28 @@ export interface StyleValidationResult {
    */
   errors: Record<string, string>;
 }
+
+// Define responsive mode types based on device viewports and custom option
+export type ResponsiveMode =
+  | "mobile"
+  | "tablet"
+  | "laptop"
+  | "desktop"
+  | "custom";
+
+// Re-export any existing types from your current editor.ts file that might be needed
+// Add this to your existing types/editor.ts file
+
+// You might also want to add this interface to represent device viewport dimensions
+export interface DeviceViewport {
+  width: number;
+  height: number;
+  name: string;
+}
+
+// Add a type for the responsive preview state if needed
+export interface ResponsivePreviewState {
+  mode: ResponsiveMode;
+  width: number;
+  height?: number;
+}

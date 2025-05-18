@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckIcon, Pipette } from "lucide-react";
 
-interface ColorPickerProps {
-  color: string;
-  onChange: (color: string) => void;
+interface ColorControlProps {
+  value: string;
+  onChange: (value: string) => void;
+  showTransparent?: boolean;
   label?: string;
 }
 
@@ -38,13 +39,19 @@ const presetColors = [
   "#607D8B",
 ];
 
-export const ColorPicker: React.FC<ColorPickerProps> = ({
-  color,
+const ColorControl: React.FC<ColorControlProps> = ({
+  value,
   onChange,
+  showTransparent = false,
   label,
 }) => {
-  const [inputValue, setInputValue] = useState(color);
+  const [inputValue, setInputValue] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
+
+  // Create extended colors array with transparent if needed
+  const availableColors = showTransparent
+    ? ["transparent", ...presetColors]
+    : presetColors;
 
   const handleColorChange = (newColor: string) => {
     setInputValue(newColor);
@@ -52,12 +59,12 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputValue(value);
+    const newValue = e.target.value;
+    setInputValue(newValue);
 
     // Validate if it's a valid hex color
-    if (/^#([0-9A-F]{3}){1,2}$/i.test(value)) {
-      onChange(value);
+    if (/^#([0-9A-F]{3}){1,2}$/i.test(newValue)) {
+      onChange(newValue);
     }
   };
 
@@ -70,7 +77,15 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
             <Button
               variant="outline"
               className="w-10 h-10 p-0 border-2"
-              style={{ backgroundColor: color }}
+              style={{
+                backgroundColor: value,
+                backgroundImage:
+                  value === "transparent"
+                    ? "linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)"
+                    : "none",
+                backgroundSize: "10px 10px",
+                backgroundPosition: "0 0, 0 5px, 5px -5px, -5px 0px",
+              }}
             >
               <span className="sr-only">Pick color</span>
             </Button>
@@ -78,21 +93,31 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
           <PopoverContent className="w-64">
             <div className="space-y-4">
               <div className="flex flex-wrap gap-1">
-                {presetColors.map((presetColor) => (
+                {availableColors.map((presetColor) => (
                   <Button
                     key={presetColor}
                     variant="outline"
                     className="w-6 h-6 p-0 rounded-md border"
-                    style={{ backgroundColor: presetColor }}
+                    style={{
+                      backgroundColor: presetColor,
+                      backgroundImage:
+                        presetColor === "transparent"
+                          ? "linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)"
+                          : "none",
+                      backgroundSize: "8px 8px",
+                      backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
+                    }}
                     onClick={() => handleColorChange(presetColor)}
                   >
-                    {presetColor === color && (
+                    {presetColor === value && (
                       <CheckIcon
                         className="h-4 w-4"
                         style={{
-                          color: isLightColor(presetColor)
-                            ? "#000000"
-                            : "#FFFFFF",
+                          color:
+                            presetColor === "transparent" ||
+                            isLightColor(presetColor)
+                              ? "#000000"
+                              : "#FFFFFF",
                         }}
                       />
                     )}
@@ -142,10 +167,11 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
         </Popover>
         <div className="flex-1">
           <Input
-            value={inputValue}
+            value={value === "transparent" ? "transparent" : inputValue}
             onChange={handleInputChange}
             placeholder="#RRGGBB"
             maxLength={7}
+            disabled={value === "transparent"}
           />
         </div>
         <Button size="icon" variant="outline">
@@ -158,6 +184,8 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
 
 // Helper function to check if a color is light
 function isLightColor(color: string): boolean {
+  if (color === "transparent") return true;
+
   // Convert hex to RGB
   const hex = color.replace("#", "");
   const r = parseInt(
@@ -184,4 +212,4 @@ function isValidColor(color: string): boolean {
   return /^#([0-9A-F]{3}){1,2}$/i.test(color);
 }
 
-export default ColorPicker;
+export default ColorControl;

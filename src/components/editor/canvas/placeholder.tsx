@@ -1,7 +1,6 @@
-import React from "react";
 import { cn } from "@/lib/utils";
 import { useDispatch } from "react-redux";
-import { setSelectedComponentId } from "@/redux/slices/builderSlice";
+import { selectComponent } from "@/redux/slices/builderSlice";
 
 interface PlaceholderProps {
   id: string;
@@ -28,7 +27,7 @@ const Placeholder: React.FC<PlaceholderProps> = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    dispatch(setSelectedComponentId(id));
+    dispatch(selectComponent(id));
   };
 
   return (

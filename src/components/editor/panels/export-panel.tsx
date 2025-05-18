@@ -18,10 +18,17 @@ import { saveAs } from "file-saver";
 import { selectCurrentProject } from "@/redux/selectors/project-selectors";
 
 /**
+ * ExportPanel component props
+ */
+interface ExportPanelProps {
+  onClose?: () => void;
+}
+
+/**
  * ExportPanel component
  * Handles exporting the project in different formats
  */
-const ExportPanel: React.FC = () => {
+const ExportPanel: React.FC<ExportPanelProps> = ({ onClose }) => {
   const project = useSelector(selectCurrentProject);
   const [exportFormat, setExportFormat] = useState<"html" | "react" | "next">(
     "html"
@@ -382,7 +389,9 @@ export default Home;`
         </div>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline">Cancel</Button>
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
         <Button onClick={handleExport} disabled={exportStatus === "exporting"}>
           {exportStatus === "idle" && "Export"}
           {exportStatus === "exporting" && "Exporting..."}

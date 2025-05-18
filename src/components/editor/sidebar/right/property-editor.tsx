@@ -12,11 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateComponentProperty } from "@/redux/slices/builderSlice";
-import { ComponentInstance } from "@/types/components";
+import { updateComponent } from "@/redux/slices/builderSlice";
+import { Component } from "@/types/components";
 
 interface PropertyEditorProps {
-  component: ComponentInstance;
+  component: Component;
 }
 
 /**
@@ -28,27 +28,31 @@ const PropertyEditor = ({ component }: PropertyEditorProps) => {
 
   // Get the schema for this component type
   // In a real app, this would come from component registry
-  const propertySchema = component.propertySchema || [];
+  const propertySchema = component.metadata?.propertySchema || [];
 
   // Update a property value
   const handlePropertyChange = useCallback(
     (propertyName: string, value: any) => {
       dispatch(
-        updateComponentProperty({
-          componentId: component.id,
-          property: propertyName,
-          value,
+        updateComponent({
+          id: component.id,
+          changes: {
+            props: {
+              ...component.props,
+              [propertyName]: value,
+            },
+          },
         })
       );
     },
-    [dispatch, component.id]
+    [dispatch, component.id, component.props]
   );
 
   // Render controls based on property type
   const renderPropertyControl = useCallback(
     (property: any) => {
       const currentValue =
-        component.properties?.[property.name] ?? property.defaultValue;
+        component.props?.[property.name] ?? property.defaultValue;
 
       switch (property.type) {
         case "string":
@@ -118,7 +122,7 @@ const PropertyEditor = ({ component }: PropertyEditorProps) => {
           );
       }
     },
-    [component.properties, handlePropertyChange]
+    [component.props, handlePropertyChange]
   );
 
   if (!propertySchema || propertySchema.length === 0) {

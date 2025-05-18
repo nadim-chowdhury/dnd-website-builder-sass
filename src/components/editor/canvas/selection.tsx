@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { useEditorState } from "@/hooks/use-editor-state";
 import { useSelector } from "react-redux";
-import { selectBuilderComponents } from "@/redux/selectors/builder-selectors";
+import {
+  selectComponents,
+  selectComponentById,
+} from "@/redux/selectors/builder-selectors";
 import { cn } from "@/lib/utils";
 
 interface SelectionProps {
@@ -14,7 +17,13 @@ interface SelectionProps {
  */
 const Selection: React.FC<SelectionProps> = ({ className = "" }) => {
   const { selectedComponentId } = useEditorState();
-  const components = useSelector(selectBuilderComponents);
+  const components = useSelector(selectComponents);
+  // Use the selectComponentById selector instead of direct access
+  const selectedComponent = useSelector(
+    selectedComponentId
+      ? (state) => selectComponentById(state, selectedComponentId)
+      : () => null
+  );
   const selectionRef = useRef<HTMLDivElement>(null);
 
   // Find selected component element and get its position
@@ -64,11 +73,6 @@ const Selection: React.FC<SelectionProps> = ({ className = "" }) => {
       observer.disconnect();
     };
   }, [selectedComponentId]);
-
-  // Get selected component info
-  const selectedComponent = components.find(
-    (c) => c.id === selectedComponentId
-  );
 
   if (!selectedComponentId || !selectedComponent) {
     return null;

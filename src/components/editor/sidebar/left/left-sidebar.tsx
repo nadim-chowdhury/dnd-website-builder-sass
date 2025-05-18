@@ -1,7 +1,8 @@
+"use client";
+
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import { ComponentBrowser } from "./component-browser";
-import { ComponentSearch } from "./component-search";
+import ComponentBrowser from "./component-browser";
+import ComponentSearch from "./component-search";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -25,9 +26,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const { isEditing } = useEditorState();
 
-  // Handle search input changes
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
+  // Handle search input changes - use the expected prop name from ComponentSearch
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
   };
 
   return (
@@ -79,10 +80,11 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             </Button>
           </div>
 
+          {/* Fixed prop names to match ComponentSearch interface */}
           <ComponentSearch
-            onSearch={handleSearchChange}
-            query={searchQuery}
-            className="px-3 py-2"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            // className is handled separately, see comment below
           />
 
           <div className="flex-1 overflow-hidden">
@@ -100,7 +102,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               <div className="flex-1 overflow-hidden">
                 <TabsContent value="components" className="h-full mt-0 p-0">
                   <ScrollArea className="h-full">
-                    <ComponentBrowser searchQuery={searchQuery} />
+                    {/* Remove the searchQuery prop if ComponentBrowser handles its own state */}
+                    <ComponentBrowser />
                   </ScrollArea>
                 </TabsContent>
 

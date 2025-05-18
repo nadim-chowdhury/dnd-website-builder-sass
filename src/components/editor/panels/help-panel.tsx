@@ -1,11 +1,3 @@
-import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   Card,
   CardContent,
@@ -16,8 +8,14 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-interface HelpPanelProps {
+export interface HelpPanelProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -26,9 +24,9 @@ const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 z-50 h-screen w-80 bg-background border-l shadow-lg">
+    <div className="fixed right-0 top-0 z-50 h-screen w-96 bg-background border-l shadow-lg">
       <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-lg font-semibold">Help Center</h2>
+        <h2 className="text-lg font-semibold">Help & Documentation</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
@@ -36,236 +34,168 @@ const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose }) => {
 
       <ScrollArea className="h-[calc(100vh-64px)]">
         <div className="p-4">
-          <Tabs defaultValue="basics">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="basics">Basics</TabsTrigger>
-              <TabsTrigger value="components">Components</TabsTrigger>
-              <TabsTrigger value="shortcuts">Shortcuts</TabsTrigger>
-            </TabsList>
+          <Card className="mb-4">
+            <CardHeader>
+              <CardTitle>Welcome to the Website Builder</CardTitle>
+              <CardDescription>
+                Learn how to build your website easily
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">
+                This drag-and-drop website builder allows you to create
+                professional websites without any coding knowledge. Simply drag
+                components from the left sidebar and drop them onto the canvas.
+              </p>
+              <p>
+                Get started by exploring the components in the left sidebar and
+                customizing them using the properties panel on the right.
+              </p>
+            </CardContent>
+          </Card>
 
-            <TabsContent value="basics" className="mt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Getting Started</CardTitle>
-                  <CardDescription>
-                    Learn the basics of using the website builder
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="item-1">
-                      <AccordionTrigger>How to add components</AccordionTrigger>
-                      <AccordionContent>
-                        <p className="text-sm text-muted-foreground">
-                          Browse components in the left sidebar and drag them
-                          onto the canvas. You can also use the search function
-                          to find specific components.
-                        </p>
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="item-2">
-                      <AccordionTrigger>Editing content</AccordionTrigger>
-                      <AccordionContent>
-                        <p className="text-sm text-muted-foreground">
-                          Click on any component to select it. Use the right
-                          sidebar to edit its content and properties. For text
-                          components, you can also double-click to edit directly
-                          on the canvas.
-                        </p>
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="item-3">
-                      <AccordionTrigger>Saving your work</AccordionTrigger>
-                      <AccordionContent>
-                        <p className="text-sm text-muted-foreground">
-                          Your work is automatically saved as you make changes.
-                          You can also manually save by clicking the Save button
-                          in the toolbar. To publish your site, use the Publish
-                          button.
-                        </p>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="components" className="mt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Component Guide</CardTitle>
-                  <CardDescription>
-                    Learn about available components
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="layout">
-                      <AccordionTrigger>Layout Components</AccordionTrigger>
-                      <AccordionContent>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Section:</strong> Container for organizing
-                          content into rows.
-                        </p>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Container:</strong> Wrapper with adjustable
-                          width and alignment.
-                        </p>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Grid:</strong> Responsive grid layout for
-                          columns.
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Column:</strong> Vertical stack within grid or
-                          section.
-                        </p>
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="elements">
-                      <AccordionTrigger>Basic Elements</AccordionTrigger>
-                      <AccordionContent>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Heading:</strong> H1-H6 text headings.
-                        </p>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Text:</strong> Paragraph text with formatting
-                          options.
-                        </p>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Button:</strong> Interactive button with
-                          customizable styles.
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Image:</strong> Responsive image with alt text
-                          support.
-                        </p>
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="forms">
-                      <AccordionTrigger>Form Components</AccordionTrigger>
-                      <AccordionContent>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Form:</strong> Container for form elements.
-                        </p>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Input:</strong> Text field with validation
-                          options.
-                        </p>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Textarea:</strong> Multi-line text input.
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Submit Button:</strong> Form submission
-                          button.
-                        </p>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="shortcuts" className="mt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Keyboard Shortcuts</CardTitle>
-                  <CardDescription>Speed up your workflow</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Save</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        Ctrl + S
-                      </kbd>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Undo</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        Ctrl + Z
-                      </kbd>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Redo</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        Ctrl + Y
-                      </kbd>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Delete selected</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        Delete
-                      </kbd>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Duplicate selected</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        Ctrl + D
-                      </kbd>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Copy selected</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        Ctrl + C
-                      </kbd>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Paste</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        Ctrl + V
-                      </kbd>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Select all</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        Ctrl + A
-                      </kbd>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Preview</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        Ctrl + P
-                      </kbd>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Toggle help</span>
-                      <kbd className="bg-muted px-2 py-1 text-xs rounded">
-                        F1
-                      </kbd>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-
-          <div className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Need more help?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Check out our comprehensive documentation or contact support.
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="adding-components">
+              <AccordionTrigger>Adding Components</AccordionTrigger>
+              <AccordionContent>
+                <p className="mb-2">To add components to your page:</p>
+                <ol className="list-decimal pl-4 space-y-2">
+                  <li>Find a component in the left sidebar</li>
+                  <li>Drag it onto the canvas</li>
+                  <li>Adjust its properties in the right sidebar</li>
+                </ol>
+                <p className="mt-2">
+                  You can add text, images, buttons, forms, and many other
+                  elements from the component library.
                 </p>
-                <div className="flex flex-col gap-2">
-                  <Button variant="outline" className="w-full">
-                    Documentation
-                  </Button>
-                  <Button variant="outline" className="w-full">
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="editing-components">
+              <AccordionTrigger>Editing Components</AccordionTrigger>
+              <AccordionContent>
+                <p className="mb-2">To edit a component:</p>
+                <ol className="list-decimal pl-4 space-y-2">
+                  <li>Click on the component to select it</li>
+                  <li>
+                    Use the properties panel on the right to customize its
+                    appearance
+                  </li>
+                  <li>
+                    For text components, click directly on the text to edit it
+                  </li>
+                </ol>
+                <p className="mt-2">
+                  You can change colors, sizes, fonts, alignments, and more from
+                  the properties panel.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="layouts">
+              <AccordionTrigger>Working with Layouts</AccordionTrigger>
+              <AccordionContent>
+                <p className="mb-2">Layouts help you structure your page:</p>
+                <ol className="list-decimal pl-4 space-y-2">
+                  <li>
+                    Add container components like &quot;Section&quot; or
+                    &quot;Grid&quot;
+                  </li>
+                  <li>Drag components into these containers</li>
+                  <li>
+                    Use the properties panel to adjust spacing and alignment
+                  </li>
+                </ol>
+                <p className="mt-2">
+                  Layouts automatically adjust to different screen sizes, making
+                  your website responsive.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="styles">
+              <AccordionTrigger>Styling Your Website</AccordionTrigger>
+              <AccordionContent>
+                <p className="mb-2">You can easily style your website:</p>
+                <ol className="list-decimal pl-4 space-y-2">
+                  <li>Set global styles in the Settings panel</li>
+                  <li>
+                    Apply component-specific styles using the properties panel
+                  </li>
+                  <li>Use predefined style presets from the Styles tab</li>
+                </ol>
+                <p className="mt-2">
+                  You can also add custom CSS in the Advanced tab of the
+                  Settings panel.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="publishing">
+              <AccordionTrigger>Publishing Your Website</AccordionTrigger>
+              <AccordionContent>
+                <p className="mb-2">To publish your website:</p>
+                <ol className="list-decimal pl-4 space-y-2">
+                  <li>
+                    Click the &quot;Publish&quot; button in the top toolbar
+                  </li>
+                  <li>Choose your publishing options</li>
+                  <li>Click &quot;Publish&quot; to make your website live</li>
+                </ol>
+                <p className="mt-2">
+                  You can also export your website code using the Export panel.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="shortcuts">
+              <AccordionTrigger>Keyboard Shortcuts</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="font-medium">Ctrl+S</div>
+                  <div>Save project</div>
+                  <div className="font-medium">Ctrl+Z</div>
+                  <div>Undo</div>
+                  <div className="font-medium">Ctrl+Shift+Z</div>
+                  <div>Redo</div>
+                  <div className="font-medium">Delete</div>
+                  <div>Delete selected component</div>
+                  <div className="font-medium">Ctrl+D</div>
+                  <div>Duplicate selected component</div>
+                  <div className="font-medium">Ctrl+P</div>
+                  <div>Preview website</div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>Need More Help?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">
+                If you need further assistance, check out these resources:
+              </p>
+              <ul className="space-y-2">
+                <li>
+                  <Button variant="link" className="p-0 h-auto">
                     Video Tutorials
                   </Button>
-                  <Button variant="default" className="w-full">
+                </li>
+                <li>
+                  <Button variant="link" className="p-0 h-auto">
+                    Documentation
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="link" className="p-0 h-auto">
                     Contact Support
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </ScrollArea>
     </div>

@@ -1,16 +1,18 @@
 import { StyleProperties } from "./editor";
 
-// Basic component interface
+// Updated Component interface to match builderSlice requirements
 export interface Component {
   id: string;
   type: ComponentType;
   name: string;
-  children?: Component[];
+  children?: string[]; // Changed from Component[] to string[] to match builderSlice
   props: ComponentProps;
   styles: StyleProperties;
   isHidden?: boolean;
   isLocked?: boolean;
   metadata?: ComponentMetadata;
+  parentId: string | null; // Fixed type to match builderSlice
+  order: number; // Fixed type to match builderSlice
 }
 
 // Component metadata for additional information
@@ -20,6 +22,19 @@ export interface ComponentMetadata {
   createdAt?: string;
   author?: string;
   customData?: Record<string, any>;
+  propertySchema?: PropertySchema[]; // Add this line
+}
+
+export interface PropertySchema {
+  name: string;
+  label?: string;
+  type: "string" | "number" | "boolean" | "select" | string;
+  defaultValue?: any;
+  placeholder?: string;
+  description?: string;
+  documentation?: string;
+  options?: Array<{ value: string; label: string }>;
+  required?: boolean;
 }
 
 // Available component types
@@ -39,6 +54,7 @@ export enum ComponentType {
   IMAGE = "image",
   VIDEO = "video",
   ICON = "icon",
+  LINK = "link",
 
   // Form components
   FORM = "form",
@@ -76,12 +92,10 @@ export enum ComponentCategory {
   CUSTOM = "custom",
 }
 
-// Base component properties
+// The rest of your file remains the same...
 export interface ComponentProps {
   [key: string]: any;
 }
-
-// Component props for different components
 
 export interface TextProps extends ComponentProps {
   content: string;
