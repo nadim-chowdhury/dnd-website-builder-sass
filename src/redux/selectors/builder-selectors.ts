@@ -328,3 +328,64 @@ export const selectIsEditing = createSelector(
 export const selectDomRefIds = (state: RootState) => state.builder.domRefIds;
 export const selectDomRefIdForComponent = (id: string) => (state: RootState) =>
   state.builder.domRefIds[id] || null;
+
+// src/redux/selectors/builder-selectors.ts
+
+// import { RootState } from "../store";
+// import { createSelector } from "@reduxjs/toolkit";
+
+// // Select all components
+// export const selectComponents = (state: RootState) => state.builder.components;
+
+// // Select a specific component by ID
+// export const selectComponentById = (state: RootState, componentId: string) =>
+//   state.builder.components[componentId];
+
+// // Select the currently selected component
+// export const selectSelectedComponent = createSelector(
+//   [(state: RootState) => state.builder.selectedComponentId, selectComponents],
+//   (selectedId, components) => {
+//     if (!selectedId) return null;
+//     return components[selectedId];
+//   }
+// );
+
+// // Select components by parent ID
+// export const selectComponentsByParent = createSelector(
+//   [selectComponents, (_, parentId: string | null) => parentId],
+//   (components, parentId) => {
+//     return Object.values(components)
+//       .filter((component) => component.parentId === parentId)
+//       .sort((a, b) => a.order - b.order);
+//   }
+// );
+
+// // Select root components (components with no parent)
+// export const selectRootComponents = createSelector(
+//   [selectComponents],
+//   (components) => {
+//     return Object.values(components)
+//       .filter((component) => component.parentId === null)
+//       .sort((a, b) => a.order - b.order);
+//   }
+// );
+
+// // Select the current project
+// export const selectCurrentProject = createSelector(
+//   [
+//     (state: RootState) => state.builder.projects,
+//     (state: RootState) => state.builder.currentProjectId,
+//   ],
+//   (projects, currentProjectId) => {
+//     if (!currentProjectId) return null;
+//     return projects[currentProjectId];
+//   }
+// );
+
+// // Select all projects as an array
+// export const selectAllProjects = createSelector(
+//   [(state: RootState) => state.builder.projects],
+//   (projects) => {
+//     return Object.values(projects);
+//   }
+// );

@@ -90,3 +90,74 @@ export function createBlankTemplate() {
     },
   };
 }
+
+// src/lib/templates/blank-template.ts
+
+{% comment %} import { v4 as uuidv4 } from "uuid";
+
+/**
+ * Creates a blank template with minimal components
+ */
+export const createBlankTemplate = () => {
+  // Generate unique IDs for components
+  const rootContainerId = uuidv4();
+  const headingId = uuidv4();
+  const paragraphId = uuidv4();
+  const buttonId = uuidv4();
+
+  return {
+    name: "Blank Template",
+    description: "A minimal starting point for your project",
+    thumbnail: "/templates/blank.png",
+    components: {
+      [rootContainerId]: {
+        id: rootContainerId,
+        type: "Container",
+        name: "Main Container",
+        parentId: null,
+        order: 0,
+        props: {
+          maxWidth: "lg",
+          padding: "2rem",
+          centered: true,
+        },
+        children: [headingId, paragraphId, buttonId],
+      },
+      [headingId]: {
+        id: headingId,
+        type: "Heading",
+        name: "Heading",
+        parentId: rootContainerId,
+        order: 0,
+        props: {
+          content: "Welcome to your new website",
+          level: "h1",
+          className: "text-3xl font-bold mb-4",
+        },
+      },
+      [paragraphId]: {
+        id: paragraphId,
+        type: "Text",
+        name: "Paragraph",
+        parentId: rootContainerId,
+        order: 1,
+        props: {
+          content: "Start building your page by dragging components from the sidebar.",
+          className: "text-lg mb-6",
+        },
+      },
+      [buttonId]: {
+        id: buttonId,
+        type: "Button",
+        name: "Button",
+        parentId: rootContainerId,
+        order: 2,
+        props: {
+          content: "Get Started",
+          variant: "primary",
+          size: "lg",
+        },
+      },
+    },
+  };
+}; {% endcomment %}

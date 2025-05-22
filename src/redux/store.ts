@@ -41,3 +41,26 @@ export type AppDispatch = typeof store.dispatch;
 export type AppState = RootState;
 
 export default store;
+
+// src/redux/store.ts
+
+// import { configureStore } from "@reduxjs/toolkit";
+// import builderReducer from "./slices/builderSlice";
+
+// export const store = configureStore({
+//   reducer: {
+//     builder: builderReducer,
+//     // Add other reducers here
+//   },
+//   middleware: (getDefaultMiddleware) =>
+//     getDefaultMiddleware({
+//       serializableCheck: {
+//         // Ignore certain paths for non-serializable values
+//         ignoredActions: ["builder/updateComponentDomId"],
+//         ignoredPaths: ["builder.domRefIds"],
+//       },
+//     }),
+// });
+
+// export type RootState = ReturnType<typeof store.getState>;
+// export type AppDispatch = typeof store.dispatch;

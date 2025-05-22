@@ -199,3 +199,68 @@ export const useEditorState = () => {
 };
 
 export default useEditorState;
+
+// src/hooks/use-editor-state.ts
+
+// import { useSelector, useDispatch } from "react-redux";
+// import {
+//   selectComponent,
+//   setUnsavedChanges,
+//   setError,
+// } from "@/redux/slices/builderSlice";
+// import { RootState } from "@/redux/store";
+
+// export const useEditorState = () => {
+//   const dispatch = useDispatch();
+//   const selectedComponentId = useSelector(
+//     (state: RootState) => state.builder.selectedComponentId
+//   );
+//   const hoveredComponentId = useSelector(
+//     (state: RootState) => state.builder.hoveredComponentId
+//   );
+//   const components = useSelector(
+//     (state: RootState) => state.builder.components
+//   );
+//   const editorMode = useSelector(
+//     (state: RootState) => state.builder.editorMode
+//   );
+//   const canvasConfig = useSelector(
+//     (state: RootState) => state.builder.canvasConfig
+//   );
+//   const unsavedChanges = useSelector(
+//     (state: RootState) => state.builder.unsavedChanges
+//   );
+//   const error = useSelector((state: RootState) => state.builder.error);
+//   const initialized = Object.keys(components).length > 0;
+//   const saving = unsavedChanges;
+
+//   // Select a component
+//   const selectComponentById = (id: string | null) => {
+//     dispatch(selectComponent(id));
+//   };
+
+//   // Mark changes as saved or unsaved
+//   const markChangesSaved = (saved: boolean = true) => {
+//     dispatch(setUnsavedChanges(!saved));
+//   };
+
+//   // Set an error message
+//   const setErrorMessage = (message: string | null) => {
+//     dispatch(setError(message));
+//   };
+
+//   return {
+//     selectedComponentId,
+//     hoveredComponentId,
+//     components,
+//     editorMode,
+//     canvasConfig,
+//     unsavedChanges,
+//     error,
+//     initialized,
+//     saving,
+//     selectComponentById,
+//     markChangesSaved,
+//     setErrorMessage,
+//   };
+// };

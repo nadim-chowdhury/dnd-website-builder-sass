@@ -239,3 +239,95 @@ export const useDragDrop = () => {
 };
 
 export default useDragDrop;
+
+// src/hooks/use-drag-drop.ts
+
+// import { useState, useEffect } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import {
+//   startDrag,
+//   updateDrag,
+//   endDrag
+// } from "@/redux/slices/builderSlice";
+// import { RootState } from "@/redux/store";
+
+// export interface DragItem {
+//   id?: string;
+//   type: string;
+//   data?: Record<string, any>;
+// }
+
+// // Hook for drag and drop operations
+// export const useDragDrop = () => {
+//   const dispatch = useDispatch();
+//   const dragState = useSelector((state: RootState) => state.builder.dragState);
+//   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null);
+
+//   // Initialize with the state from Redux
+//   const isDragging = dragState.isDragging;
+
+//   // Handle starting a new drag operation
+//   const startDragging = (
+//     item: DragItem,
+//     position: { x: number; y: number },
+//     offset: { x: number; y: number } = { x: 0, y: 0 }
+//   ) => {
+//     setDraggedItem(item);
+//     dispatch(
+//       startDrag({
+//         componentId: item.id || null,
+//         componentType: item.type as any,
+//         position,
+//         offset,
+//       })
+//     );
+//   };
+
+//   // Update the drag position
+//   const updateDragging = (
+//     position: { x: number; y: number },
+//     dropTargetId?: string | null
+//   ) => {
+//     dispatch(updateDrag({ position, dropTargetId }));
+//   };
+
+//   // End the drag operation
+//   const endDragging = () => {
+//     setDraggedItem(null);
+//     dispatch(endDrag());
+//   };
+
+//   // Add global event listeners for drag and drop
+//   useEffect(() => {
+//     const handleMouseMove = (e: MouseEvent) => {
+//       if (isDragging) {
+//         updateDragging({ x: e.clientX, y: e.clientY });
+//       }
+//     };
+
+//     const handleMouseUp = () => {
+//       if (isDragging) {
+//         endDragging();
+//       }
+//     };
+
+//     // Add event listeners
+//     window.addEventListener("mousemove", handleMouseMove);
+//     window.addEventListener("mouseup", handleMouseUp);
+
+//     return () => {
+//       // Remove event listeners on cleanup
+//       window.removeEventListener("mousemove", handleMouseMove);
+//       window.removeEventListener("mouseup", handleMouseUp);
+//     };
+//   }, [isDragging]);
+
+//   return {
+//     isDragging,
+//     draggedItem,
+//     dragState,
+//     startDragging,
+//     updateDragging,
+//     endDragging,
+//   };
+// };

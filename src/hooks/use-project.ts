@@ -242,3 +242,99 @@ export function useProjects() {
     unpublishProject,
   };
 }
+
+// import { useSelector, useDispatch } from "react-redux";
+// import {
+//   addProject,
+//   updateProject,
+//   removeProject,
+//   setCurrentProject,
+//   loadProject,
+// } from "@/redux/slices/builderSlice";
+// import { RootState } from "@/redux/store";
+// import { v4 as uuidv4 } from "uuid";
+
+// export interface Project {
+//   id: string;
+//   name: string;
+//   description?: string;
+//   template?: any;
+//   createdAt?: string;
+//   updatedAt?: string;
+// }
+
+// export const useProjects = () => {
+//   const dispatch = useDispatch();
+//   const projects = useSelector((state: RootState) => state.builder.projects);
+//   const currentProjectId = useSelector(
+//     (state: RootState) => state.builder.currentProjectId
+//   );
+
+//   // Get all projects
+//   const getAllProjects = () => {
+//     return Object.values(projects);
+//   };
+
+//   // Get a project by ID
+//   const getProjectById = async (id: string) => {
+//     // In a real app, you might fetch from an API here
+//     return projects[id] || null;
+//   };
+
+//   // Create a new project
+//   const createProject = async (projectData: Omit<Project, "id">) => {
+//     const id = uuidv4();
+//     const newProject = {
+//       id,
+//       ...projectData,
+//       createdAt: new Date().toISOString(),
+//       updatedAt: new Date().toISOString(),
+//     };
+
+//     dispatch(addProject(newProject));
+
+//     // If this has a template, load it
+//     if (projectData.template) {
+//       dispatch(loadProject(projectData.template.components || {}));
+//     }
+
+//     return newProject;
+//   };
+
+//   // Update a project
+//   const updateProjectById = async (id: string, changes: Partial<Project>) => {
+//     if (projects[id]) {
+//       const updatedProject = {
+//         ...projects[id],
+//         ...changes,
+//         updatedAt: new Date().toISOString(),
+//       };
+
+//       dispatch(updateProject({ id, changes: updatedProject }));
+//       return updatedProject;
+//     }
+//     return null;
+//   };
+
+//   // Delete a project
+//   const deleteProject = async (id: string) => {
+//     dispatch(removeProject(id));
+//     return true;
+//   };
+
+//   // Set the current project
+//   const setActiveProject = (id: string | null) => {
+//     dispatch(setCurrentProject(id));
+//   };
+
+//   return {
+//     projects,
+//     currentProjectId,
+//     getAllProjects,
+//     getProjectById,
+//     createProject,
+//     updateProjectById,
+//     deleteProject,
+//     setActiveProject,
+//   };
+// };

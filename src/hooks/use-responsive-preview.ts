@@ -168,3 +168,66 @@ export const useResponsivePreview = () => {
 };
 
 export default useResponsivePreview;
+
+// src/hooks/use-responsive-preview.ts
+
+// import { useSelector, useDispatch } from "react-redux";
+// import {
+//   setResponsiveMode,
+//   setResponsivePreviewWidth,
+// } from "@/redux/slices/builderSlice";
+// import { RootState } from "@/redux/store";
+// import { useState, useEffect } from "react";
+
+// // ResponsiveMode type (if not defined elsewhere)
+// export type ResponsiveMode = "desktop" | "tablet" | "mobile" | "custom";
+
+// export const useResponsivePreview = () => {
+//   const dispatch = useDispatch();
+//   const mode = useSelector((state: RootState) => state.builder.responsiveMode);
+//   const width = useSelector(
+//     (state: RootState) => state.builder.responsivePreviewWidth
+//   );
+
+//   // Default widths for different devices
+//   const deviceWidths = {
+//     desktop: 1920,
+//     tablet: 768,
+//     mobile: 375,
+//     custom: width,
+//   };
+
+//   // Change the responsive mode
+//   const setMode = (newMode: ResponsiveMode) => {
+//     dispatch(setResponsiveMode(newMode));
+
+//     // Update the width based on the selected mode
+//     if (newMode !== "custom") {
+//       dispatch(setResponsivePreviewWidth(deviceWidths[newMode]));
+//     }
+//   };
+
+//   // Set a custom width
+//   const setPreviewWidth = (newWidth: number) => {
+//     dispatch(setResponsivePreviewWidth(newWidth));
+
+//     // If the width doesn't match any preset, set mode to custom
+//     if (
+//       newWidth !== deviceWidths.desktop &&
+//       newWidth !== deviceWidths.tablet &&
+//       newWidth !== deviceWidths.mobile
+//     ) {
+//       dispatch(setResponsiveMode("custom"));
+//     }
+//   };
+
+//   return {
+//     device: mode, // For compatibility with the code
+//     responsiveMode: mode,
+//     width, // Current width
+//     previewWidth: width, // For compatibility with the code
+//     deviceWidths,
+//     setMode,
+//     setPreviewWidth,
+//   };
+// };

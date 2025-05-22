@@ -62,3 +62,39 @@ const Grid: React.FC<GridProps> = ({ className = "", columns = 3 }) => {
 };
 
 export default Grid;
+
+
+// src/components/editor/canvas/grid.tsx
+
+// import React from "react";
+// import { useSelector } from "react-redux";
+// import { RootState } from "@/redux/store";
+
+// /**
+//  * Grid component
+//  * Renders a grid overlay on the canvas for alignment
+//  */
+// const Grid: React.FC = () => {
+//   const { gridVisible, gridSize } = useSelector(
+//     (state: RootState) => state.builder.canvasConfig
+//   );
+
+//   if (!gridVisible) {
+//     return null;
+//   }
+
+//   return (
+//     <div
+//       className="absolute inset-0 pointer-events-none z-0"
+//       style={{
+//         backgroundImage: `
+//           linear-gradient(to right, rgba(81, 92, 230, 0.1) 1px, transparent 1px),
+//           linear-gradient(to bottom, rgba(81, 92, 230, 0.1) 1px, transparent 1px)
+//         `,
+//         backgroundSize: `${gridSize}px ${gridSize}px`,
+//       }}
+//     />
+//   );
+// };
+
+// export default Grid;
